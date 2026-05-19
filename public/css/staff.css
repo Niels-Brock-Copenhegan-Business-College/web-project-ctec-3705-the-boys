@@ -1,0 +1,594 @@
+/* ============================================================
+   staff.css — UniHub Staff Portal styles
+   All classes are namespaced with .staff- to avoid clashing
+   with the student-facing custom.css
+   ============================================================ */
+
+/* ── Layout ─────────────────────────────────────────────────── */
+
+.staff-body {
+    background: #f4f6f9;
+    min-height: 100vh;
+}
+
+.staff-main {
+    min-height: calc(100vh - 62px);
+}
+
+/* ── Navbar ─────────────────────────────────────────────────── */
+
+.staff-navbar {
+    background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.staff-navbar .nav-link {
+    color: rgba(255, 255, 255, .8);
+    font-size: .9rem;
+    padding: .4rem .85rem;
+    border-radius: 6px;
+    transition: background .15s, color .15s;
+}
+
+.staff-navbar .nav-link:hover,
+.staff-navbar .nav-link:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, .12);
+}
+
+.staff-navbar .nav-link.active {
+    color: #fff;
+    background: rgba(255, 255, 255, .18);
+    font-weight: 500;
+}
+
+.staff-navbar__brand {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none;
+}
+
+.staff-navbar__mark {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8a020, #ffd37a);
+    color: #11213a;
+    font-weight: 800;
+    font-size: .95rem;
+    flex-shrink: 0;
+}
+
+.staff-navbar__copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.staff-navbar__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.staff-navbar__sub {
+    font-size: .7rem;
+    color: rgba(255,255,255,.7);
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.staff-navbar__user {
+    opacity: .85;
+}
+
+/* ── Stat cards ─────────────────────────────────────────────── */
+
+.staff-stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.25rem 1.25rem 1rem;
+    border: 1px solid #e6eaf0;
+    text-align: center;
+    transition: box-shadow .15s;
+}
+
+.staff-stat-card:hover {
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+
+.staff-stat-card--accent {
+    background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+    border-color: transparent;
+}
+
+.staff-stat-card--accent .staff-stat-number,
+.staff-stat-card--accent .staff-stat-label {
+    color: #fff;
+}
+
+.staff-stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #003366;
+    line-height: 1;
+}
+
+.staff-stat-label {
+    font-size: .78rem;
+    color: #6b7280;
+    margin-top: .35rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* ── Section cards ──────────────────────────────────────────── */
+
+.staff-section-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e6eaf0;
+    overflow: hidden;
+}
+
+.staff-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.staff-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #111827;
+}
+
+.staff-view-all {
+    font-size: .82rem;
+    color: #003366;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.staff-view-all:hover {
+    text-decoration: underline;
+}
+
+.staff-empty-state {
+    padding: 2rem 1.25rem;
+    text-align: center;
+}
+
+/* ── Year grouping ──────────────────────────────────────────── */
+
+.staff-year-group {
+    padding: 0 1.25rem .5rem;
+}
+
+.staff-year-label {
+    font-size: .72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #9ca3af;
+    padding: .9rem 0 .4rem;
+}
+
+/* ── Module rows ────────────────────────────────────────────── */
+
+.staff-module-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: background .12s;
+    margin-bottom: .25rem;
+    border: 1px solid transparent;
+}
+
+.staff-module-row:hover,
+.staff-module-row:focus-visible {
+    background: #f4f7fb;
+    border-color: #d0daea;
+    color: inherit;
+    text-decoration: none;
+}
+
+.staff-module-row__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.staff-module-row__title {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.staff-module-row__desc {
+    font-size: .78rem;
+    color: #6b7280;
+    margin-top: .15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.staff-module-row__meta {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-shrink: 0;
+}
+
+.staff-arrow {
+    color: #9ca3af;
+    font-size: .9rem;
+}
+
+/* ── Programme rows ─────────────────────────────────────────── */
+
+.staff-programme-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.staff-programme-row:last-child {
+    border-bottom: none;
+}
+
+.staff-programme-row__title {
+    font-size: .88rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: .25rem;
+}
+
+/* ── Profile card ───────────────────────────────────────────── */
+
+.staff-profile-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.staff-profile-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #003366, #00509e);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.staff-profile-dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .35rem 1rem;
+    padding: .85rem 1.25rem .75rem;
+    margin: 0;
+    font-size: .85rem;
+}
+
+.staff-profile-dl dt {
+    color: #6b7280;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.staff-profile-dl dd {
+    color: #111827;
+    margin: 0;
+}
+
+/* ── Module detail page ─────────────────────────────────────── */
+
+.staff-detail-hero {
+    background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.staff-detail-hero__year {
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    opacity: .75;
+    margin-bottom: .5rem;
+}
+
+.staff-detail-hero__title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: .75rem;
+}
+
+.staff-detail-hero__desc {
+    opacity: .88;
+    font-size: .95rem;
+    line-height: 1.65;
+    max-width: 680px;
+}
+
+/* ── Badges ─────────────────────────────────────────────────── */
+
+.staff-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .6rem;
+    border-radius: 99px;
+    white-space: nowrap;
+}
+
+.staff-badge--leader {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.staff-badge--contributor {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.staff-role-badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .2rem .65rem;
+    border-radius: 99px;
+    text-transform: capitalize;
+}
+
+.staff-role-instructor   { background: #dbeafe; color: #1d4ed8; }
+.staff-role-coordinator  { background: #d1fae5; color: #065f46; }
+.staff-role-admin        { background: #fee2e2; color: #991b1b; }
+
+.staff-level-badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 600;
+    padding: .15rem .55rem;
+    border-radius: 99px;
+}
+
+.staff-level-ug { background: #e0f2fe; color: #0369a1; }
+.staff-level-pg { background: #fef3c7; color: #92400e; }
+
+/* ── Staff list inside module detail ────────────────────────── */
+
+.staff-person-row {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: .75rem 1.25rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.staff-person-row:last-child { border-bottom: none; }
+
+.staff-person-avatar {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #003366, #00509e);
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.staff-person-name  { font-size: .88rem; font-weight: 600; color: #111827; }
+.staff-person-email { font-size: .78rem; color: #6b7280; }
+
+/* ── Programmes detail list ─────────────────────────────────── */
+
+.staff-prog-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid #f0f2f5;
+}
+
+.staff-prog-item:last-child { border-bottom: none; }
+
+.staff-prog-item__title {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: .25rem;
+}
+
+/* ── Programme card (partials/programme-card.php) ───────────── */
+
+.staff-prog-card__bar {
+    height: 5px;
+    border-radius: 14px 14px 0 0;
+}
+
+.staff-prog-card__bar--ug { background: #0369a1; }
+.staff-prog-card__bar--pg { background: #92400e; }
+
+/* ── Module detail image ─────────────────────────────────────── */
+
+.staff-module-image {
+    width: 100%;
+    max-height: 320px;
+    object-fit: cover;
+    border: 1px solid #e6eaf0;
+}
+
+/* ── Programme card image ───────────────────────────────────── */
+
+.staff-prog-card__image-wrap {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
+}
+
+.staff-prog-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.staff-prog-card__image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.staff-prog-card__image-placeholder--ug {
+    background: linear-gradient(135deg, #003366 0%, #00509e 100%);
+}
+
+.staff-prog-card__image-placeholder--pg {
+    background: linear-gradient(135deg, #92400e 0%, #d97706 100%);
+}
+
+.staff-prog-card__image-initial {
+    font-size: 3rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.25);
+    user-select: none;
+}
+
+.staff-prog-card__level-overlay {
+    position: absolute;
+    bottom: .5rem;
+    left: .6rem;
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+    backdrop-filter: blur(4px);
+}
+
+/* ── Programme card v2 (clickable + stats) ──────────────────── */
+
+.staff-prog-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+}
+
+.staff-prog-card {
+    transition: transform .15s, box-shadow .15s;
+    cursor: pointer;
+}
+
+.staff-prog-card-link:hover .staff-prog-card,
+.staff-prog-card-link:focus-visible .staff-prog-card {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+}
+
+.staff-prog-card__draft-overlay {
+    position: absolute;
+    top: .5rem;
+    right: .6rem;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.staff-prog-card__title {
+    font-size: .92rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.3;
+    margin-bottom: .4rem;
+}
+
+.staff-prog-card__desc {
+    font-size: .76rem;
+    color: #6b7280;
+    line-height: 1.55;
+    margin-bottom: .85rem;
+}
+
+/* Stats row */
+.staff-prog-card__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .25rem;
+    padding-top: .75rem;
+    border-top: 1px solid #f0f2f5;
+}
+
+.staff-prog-card__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .1rem;
+}
+
+.staff-prog-card__stat-n {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #003366;
+    line-height: 1;
+}
+
+.staff-prog-card__stat-l {
+    font-size: .65rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    text-align: center;
+}
+
+.staff-prog-card__stat--highlight .staff-prog-card__stat-n {
+    color: #1d4ed8;
+}
+
+.staff-prog-card__stat--highlight .staff-prog-card__stat-l {
+    color: #1d4ed8;
+    font-weight: 600;
+}

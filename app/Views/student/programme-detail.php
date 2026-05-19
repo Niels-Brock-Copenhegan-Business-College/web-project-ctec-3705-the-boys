@@ -1,0 +1,108 @@
+<?php
+$prog = $prog ?? ['id' => 0, 'title' => '', 'level' => '', 'description' => ''];
+$pageTitle = htmlspecialchars($prog['title'], ENT_QUOTES);
+include __DIR__ . '/../layout/header.php';
+?>
+
+<section class="py-5">
+  <div class="container">
+    <a href="<?= base_url('/') ?>" class="btn btn-outline-secondary mt-2 mb-2">← Back</a>
+    <div class="row">
+      <div class="col-lg-8">
+        <?php if (!empty($prog['image_url'])): ?>
+          <?php
+            $img = $prog['image_url'];
+            $src = preg_match('#^https?://#i', $img) ? $img : base_url('/' . ltrim($img, '/'));
+          ?>
+          <?php endif; ?>
+          <img src="<?= htmlspecialchars($src, ENT_QUOTES) ?>"
+               class="img-fluid rounded mb-4" alt="<?= htmlspecialchars($prog['title'], ENT_QUOTES) ?> programme image">
+        <span class="badge <?= $prog['level'] === 'Undergraduate' ? 'bg-info' : 'bg-warning text-dark' ?> mb-2">
+          <?= htmlspecialchars($prog['level'], ENT_QUOTES) ?>
+        </span>
+        <h1><?= htmlspecialchars($prog['title'], ENT_QUOTES) ?></h1>
+        <p class="lead"><?= htmlspecialchars($prog['description'], ENT_QUOTES) ?></p>
+        <a href="<?= base_url('/interest/register/' . $prog['id']) ?>" class="btn btn-primary btn-lg mt-2">Register Interest</a>
+      </div>
+    </div>
+
+    <?php if (!empty($modulesByYear)): ?>
+      <h2 class="mt-5 mb-3">Modules by Year</h2>
+      <div class="accordion" id="modulesAccordion">
+        <?php foreach ($modulesByYear as $year => $modules): ?>
+          <div class="accordion-item">
+            <h3 class="accordion-header" id="heading-year<?= $year ?>">
+              <button class="accordion-button <?= $year > 1 ? 'collapsed' : '' ?>" type="button"
+                      data-bs-toggle="collapse" data-bs-target="#collapse-year<?= $year ?>"
+                      aria-expanded="<?= $year === 1 ? 'true' : 'false' ?>"
+                      aria-controls="collapse-year<?= $year ?>">
+                Year <?= (int)$year ?>
+              </button>
+            </h3>
+            <div id="collapse-year<?= $year ?>" class="accordion-collapse collapse <?= $year == 1 ? 'show' : '' ?>">
+              <div class="accordion-body">
+                <div class="accordion accordion-flush" id="modulesYear<?= (int)$year ?>">
+                  <?php foreach ($modules as $index => $m): ?>
+                    <?php
+                      $moduleId = 'year' . (int)$year . '-module-' . ($m['id'] ?? $index);
+                      $moduleHeadingId = 'heading-' . $moduleId;
+                      $moduleCollapseId = 'collapse-' . $moduleId;
+                    ?>
+                    <div class="accordion-item border rounded mb-3 overflow-hidden">
+                      <h4 class="accordion-header" id="<?= $moduleHeadingId ?>">
+                        <button class="accordion-button collapsed fw-semibold" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#<?= $moduleCollapseId ?>"
+                                aria-expanded="false" aria-controls="<?= $moduleCollapseId ?>">
+                          <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>
+                        </button>
+                      </h4>
+                      <div id="<?= $moduleCollapseId ?>" class="accordion-collapse collapse" aria-labelledby="<?= $moduleHeadingId ?>" data-bs-parent="#modulesYear<?= (int)$year ?>">
+                        <div class="accordion-body bg-body-tertiary">
+                          
+                          <h5 class="h6 fw-bold mb-2"><?= htmlspecialchars($m['title'], ENT_QUOTES) ?></h5>
+                          <p class="mb-0 text-muted"><?= htmlspecialchars($m['description'], ENT_QUOTES) ?></p>
+                        </div>
+                      </div>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+</section>
+
+<?php if (!empty($staff)): ?>
+<section class="py-5 bg-light" aria-labelledby="staff-heading">
+  <div class="container">
+    <h2 id="staff-heading" class="h4 fw-semibold mb-4">Programme team</h2>
+    <div class="row g-3">
+      <?php foreach ($staff as $s): ?>
+        <div class="col-sm-6 col-lg-4">
+          <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-3 border h-100">
+            <div class="staff-profile-avatar flex-shrink-0"
+                 style="width:2.8rem;height:2.8rem;border-radius:50%;background:linear-gradient(135deg,#003366,#00509e);
+                        color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;"
+                 aria-hidden="true">
+              <?= mb_strtoupper(mb_substr($s['full_name'], 0, 1)) ?>
+            </div>
+            <div class="min-width-0">
+              <div class="fw-semibold text-dark" style="font-size:.9rem;">
+                <?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>
+              </div>
+              <span class="badge" style="background:#dbeafe;color:#1d4ed8;font-size:.7rem;font-weight:600;">
+                  <?= ucfirst(htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES)) ?>
+              </span>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
+
+<?php include __DIR__ . '/../layout/footer.php'; ?>
