@@ -55,7 +55,7 @@ class StaffModel
     {
         $fields = [];
         $values = [];
-        foreach (['full_name', 'email', 'role', 'is_active'] as $f) {
+        foreach (['full_name', 'email', 'role', 'is_active', 'photo'] as $f) {
             if (isset($data[$f])) {
                 $fields[] = "$f = ?";
                 $values[] = $data[$f];

@@ -153,8 +153,6 @@ $app->group('/staff', function ($group) use ($staffCtrl) {
     $group->get('/programmes/{id:[0-9]+}', [$staffCtrl, 'programmeDetail']);
     $group->get('/profile/edit',           [$staffCtrl, 'editProfile']);
     $group->post('/profile/edit',          [$staffCtrl, 'updateProfile']);
-    $group->get('/change-password',        [$staffCtrl, 'changePasswordForm']);
-    $group->post('/change-password',       [$staffCtrl, 'changePassword']);
 })->add($staffAuth);
 
 $app->run();

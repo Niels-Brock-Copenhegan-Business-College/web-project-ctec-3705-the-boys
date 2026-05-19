@@ -54,7 +54,6 @@ function staffNavActive(string $path, string $currentPath, bool $exact = false):
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="<?= base_url('/staff/profile/edit') ?>">Edit profile</a></li>
-                        <li><a class="dropdown-item" href="<?= base_url('/staff/change-password') ?>">Change password</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="<?= base_url('/staff/logout') ?>">Log out</a></li>
                     </ul>
@@ -67,10 +66,6 @@ function staffNavActive(string $path, string $currentPath, bool $exact = false):
                 <li class="nav-item d-lg-none">
                     <a class="nav-link <?= staffNavActive(base_url('/staff/profile/edit'), $currentPath) ?>"
                        href="<?= base_url('/staff/profile/edit') ?>">Edit profile</a>
-                </li>
-                <li class="nav-item d-lg-none">
-                    <a class="nav-link <?= staffNavActive(base_url('/staff/change-password'), $currentPath) ?>"
-                       href="<?= base_url('/staff/change-password') ?>">Change password</a>
                 </li>
                 <li class="nav-item d-lg-none">
                     <a class="nav-link text-danger" href="<?= base_url('/staff/logout') ?>">Log out</a>

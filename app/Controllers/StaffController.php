@@ -298,8 +298,8 @@ class StaffController
     }
 
     /**
-     * Edit own profile — full_name and email only.
-     * Updates $_SESSION['staff_name'] immediately so navbar reflects the change.
+     * Edit own profile — full_name and photo only.
+     * Username and email are read-only (admin-managed).
      */
     public function editProfile(Request $req, Response $res): Response
     {
@@ -313,64 +313,52 @@ class StaffController
     public function updateProfile(Request $req, Response $res): Response
     {
         $staffId  = (int) $_SESSION['staff_id'];
+        $staff    = $this->staffModel->findById($staffId);
         $d        = $req->getParsedBody();
         $fullName = $this->clean($d['full_name'] ?? '');
-        $email    = $this->clean($d['email'] ?? '');
         $errors   = [];
 
-        if (!$fullName)                                            $errors['full_name'] = 'Full name is required.';
-        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email']     = 'A valid email address is required.';
+        if (!$fullName) $errors['full_name'] = 'Full name is required.';
+
+        // Handle photo upload
+        $uploadedFiles = $req->getUploadedFiles();
+        $photoFile     = $uploadedFiles['photo'] ?? null;
+        $newPhoto      = $staff['photo'] ?? null;
+
+        if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
+            $allowed   = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            $mediaType = $photoFile->getClientMediaType();
+            if (!in_array($mediaType, $allowed, true)) {
+                $errors['photo'] = 'Only JPG, PNG, WEBP or GIF images are allowed.';
+            } elseif ($photoFile->getSize() > 3 * 1024 * 1024) {
+                $errors['photo'] = 'Photo must be under 3 MB.';
+            } else {
+                $ext      = pathinfo($photoFile->getClientFilename(), PATHINFO_EXTENSION);
+                $filename = 'staff_' . $staffId . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
+                $uploadDir = __DIR__ . '/../../public/uploads/staff/';
+                if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+                $photoFile->moveTo($uploadDir . $filename);
+                // Delete old photo if exists
+                if (!empty($staff['photo'])) {
+                    $old = $uploadDir . $staff['photo'];
+                    if (file_exists($old)) @unlink($old);
+                }
+                $newPhoto = $filename;
+            }
+        }
 
         if (!empty($errors)) {
             return $this->renderer->render($res, 'staff/edit-profile.php', [
-                'staff'  => array_merge($this->staffModel->findById($staffId), $d),
+                'staff'  => array_merge($staff, $d),
                 'errors' => $errors,
+                'flash'  => [],
             ]);
         }
 
-        $this->staffModel->update($staffId, ['full_name' => $fullName, 'email' => $email]);
-
-        // Update session so navbar shows the new name immediately without re-login
+        $this->staffModel->update($staffId, ['full_name' => $fullName, 'photo' => $newPhoto]);
         $_SESSION['staff_name'] = $fullName;
 
         $this->flash('success', 'Profile updated successfully.');
         return $res->withHeader('Location', base_url('/staff/profile/edit'))->withStatus(302);
-    }
-
-    /**
-     * Change own password — verifies current password before saving new one
-     */
-    public function changePasswordForm(Request $req, Response $res): Response
-    {
-        return $this->renderer->render($res, 'staff/change-password.php', [
-            'staff' => $this->staffModel->findById((int) $_SESSION['staff_id']),
-            'flash' => $this->getFlash(),
-        ]);
-    }
-
-    public function changePassword(Request $req, Response $res): Response
-    {
-        $staffId = (int) $_SESSION['staff_id'];
-        $staff   = $this->staffModel->findById($staffId);
-        $d       = $req->getParsedBody();
-        $current = $d['current_password']  ?? '';
-        $new     = $d['new_password']      ?? '';
-        $confirm = $d['confirm_password']  ?? '';
-        $errors  = [];
-
-        if (!password_verify($current, $staff['password_hash'])) $errors['current_password'] = 'Current password is incorrect.';
-        if (strlen($new) < 6)                                    $errors['new_password']      = 'New password must be at least 6 characters.';
-        if ($new !== $confirm)                                   $errors['confirm_password']  = 'Passwords do not match.';
-
-        if (!empty($errors)) {
-            return $this->renderer->render($res, 'staff/change-password.php', [
-                'staff'  => $staff,
-                'errors' => $errors,
-            ]);
-        }
-
-        $this->staffModel->update($staffId, ['password' => $new]);
-        $this->flash('success', 'Password changed successfully.');
-        return $res->withHeader('Location', base_url('/staff/change-password'))->withStatus(302);
     }
 }
