@@ -4,6 +4,15 @@ $p    = $p ?? [];
 if (empty($p)) return;
 $isUg = ($p['level'] ?? '') === 'Undergraduate';
 $detailUrl = base_url('/staff/programmes/' . (int)$p['id']);
+
+// ── FIX: normalise image_url so it always goes through base_url() ──────────
+// DB stores either 'uploads/programmes/...' or '/uploads/programmes/...'
+// Without base_url() the src is a relative path that breaks on nested routes
+// e.g. /staff/programmes/3 would resolve the image to /staff/uploads/...
+$imageUrl = '';
+if (!empty($p['image_url'])) {
+    $imageUrl = base_url('/' . ltrim($p['image_url'], '/'));
+}
 ?>
 <a href="<?= $detailUrl ?>" class="staff-prog-card-link"
    aria-label="View <?= htmlspecialchars($p['title'], ENT_QUOTES) ?>">
@@ -11,10 +20,19 @@ $detailUrl = base_url('/staff/programmes/' . (int)$p['id']);
 
     <!-- Image or placeholder -->
     <div class="staff-prog-card__image-wrap">
-        <?php if (!empty($p['image_url'])): ?>
-            <img src="<?= htmlspecialchars($p['image_url'], ENT_QUOTES) ?>"
+        <?php if ($imageUrl): ?>
+            <img src="<?= htmlspecialchars($imageUrl, ENT_QUOTES) ?>"
                  alt="<?= htmlspecialchars($p['title'], ENT_QUOTES) ?>"
-                 class="staff-prog-card__image">
+                 class="staff-prog-card__image"
+                 loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <!-- Fallback placeholder shown if image fails to load -->
+            <div class="staff-prog-card__image-placeholder staff-prog-card__image-placeholder--<?= $isUg ? 'ug' : 'pg' ?>"
+                 style="display:none;">
+                <span class="staff-prog-card__image-initial" aria-hidden="true">
+                    <?= mb_strtoupper(mb_substr($p['title'], 0, 1)) ?>
+                </span>
+            </div>
         <?php else: ?>
             <div class="staff-prog-card__image-placeholder staff-prog-card__image-placeholder--<?= $isUg ? 'ug' : 'pg' ?>">
                 <span class="staff-prog-card__image-initial" aria-hidden="true">
