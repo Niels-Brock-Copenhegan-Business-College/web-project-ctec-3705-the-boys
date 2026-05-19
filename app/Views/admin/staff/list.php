@@ -24,8 +24,6 @@ include __DIR__ . '/../header.php';
       <thead class="table-light">
         <tr>
           <th>Full Name</th>
-          <th>Username</th>
-          <th>Email</th>
           <th>Role</th>
           <th>Status</th>
           <th>Created</th>
@@ -35,14 +33,16 @@ include __DIR__ . '/../header.php';
       <tbody>
         <?php foreach ($staff as $s): ?>
           <tr>
-            <td><strong><?= htmlspecialchars($s['full_name']) ?></strong></td>
-            <td><code><?= htmlspecialchars($s['username']) ?></code></td>
-            <td><?= htmlspecialchars($s['email']) ?></td>
             <td>
-              <span class="badge" style="background-color: <?= 
-                $s['role'] === 'instructor' ? '#0d6efd' :
-                ($s['role'] === 'coordinator' ? '#198754' : '#dc3545')
-              ?>">
+              <a href="<?= base_url('/admin/staff/' . $s['id']) ?>" class="prog-link">
+                <strong><?= htmlspecialchars($s['full_name']) ?></strong>
+              </a>
+            </td>
+
+            <td>
+              <span class="badge" style="background-color: <?=
+                                                            $s['role'] === 'instructor' ? '#0d6efd' : ($s['role'] === 'coordinator' ? '#198754' : '#dc3545')
+                                                            ?>">
                 <?= ucfirst($s['role']) ?>
               </span>
             </td>
@@ -55,8 +55,8 @@ include __DIR__ . '/../header.php';
             <td>
               <a href="<?= base_url('/admin/staff/' . $s['id']) ?>" class="btn btn-sm btn-outline-info">View</a>
               <a href="<?= base_url('/admin/staff/' . $s['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-              <form method="POST" action="<?= base_url('/admin/staff/' . $s['id'] . '/delete') ?>" style="display:inline;" 
-                    onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+              <form method="POST" action="<?= base_url('/admin/staff/' . $s['id'] . '/delete') ?>" style="display:inline;"
+                onsubmit="return confirm('Are you sure you want to delete this staff member?');">
                 <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
               </form>
             </td>

@@ -226,10 +226,10 @@ class StaffModel
     {
         $stmt = $this->pdo->prepare(
             'SELECT * FROM modules WHERE id NOT IN
-             (SELECT module_id FROM staff_modules WHERE staff_id = ?)
+             (SELECT module_id FROM staff_modules)
              ORDER BY title'
         );
-        $stmt->execute([$staffId]);
+        $stmt->execute();
         return $stmt->fetchAll();
     }
 
@@ -237,26 +237,36 @@ class StaffModel
     {
         $stmt = $this->pdo->prepare(
             'SELECT * FROM programmes WHERE id NOT IN
-             (SELECT programme_id FROM staff_programmes WHERE staff_id = ?)
+             (SELECT programme_id FROM staff_programmes)
              ORDER BY title'
         );
-        $stmt->execute([$staffId]);
+        $stmt->execute();
         return $stmt->fetchAll();
     }
 
     public function assignModule(int $staffId, int $moduleId): void
     {
-        $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO staff_modules (staff_id, module_id) VALUES (?, ?)'
-        );
+        // Prevent assigning a module that's already assigned to any staff
+        $check = $this->pdo->prepare('SELECT 1 FROM staff_modules WHERE module_id = ? LIMIT 1');
+        $check->execute([$moduleId]);
+        if ($check->fetch()) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('INSERT INTO staff_modules (staff_id, module_id) VALUES (?, ?)');
         $stmt->execute([$staffId, $moduleId]);
     }
 
     public function assignProgramme(int $staffId, int $programmeId): void
     {
-        $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO staff_programmes (staff_id, programme_id) VALUES (?, ?)'
-        );
+        // Prevent assigning a programme that's already assigned to any staff
+        $check = $this->pdo->prepare('SELECT 1 FROM staff_programmes WHERE programme_id = ? LIMIT 1');
+        $check->execute([$programmeId]);
+        if ($check->fetch()) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('INSERT INTO staff_programmes (staff_id, programme_id) VALUES (?, ?)');
         $stmt->execute([$staffId, $programmeId]);
     }
 
