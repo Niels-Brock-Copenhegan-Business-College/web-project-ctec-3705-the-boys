@@ -9,6 +9,21 @@ $flash = $flash ?? [];
 $assignedModuleIds = array_column($assignedModules, 'id');
 $assignedProgrammeIds = array_column($assignedProgrammes, 'id');
 
+// counts for hero
+$moduleCount = is_array($assignedModules) ? count($assignedModules) : 0;
+$programmeCount = is_array($assignedProgrammes) ? count($assignedProgrammes) : 0;
+
+// profile photo: prefer uploaded photo, fallback to Gravatar
+$emailForGravatar = strtolower(trim($staff['email'] ?? ''));
+$gravatarHash = $emailForGravatar ? md5($emailForGravatar) : '';
+$gravatarUrl = $gravatarHash ? 'https://www.gravatar.com/avatar/' . $gravatarHash . '?s=160&d=identicon' : null;
+$photoUrl = null;
+if (!empty($staff['photo'])) {
+  $photoUrl = base_url('/uploads/staff/' . $staff['photo']);
+} elseif ($gravatarUrl) {
+  $photoUrl = $gravatarUrl;
+}
+
 $pageTitle = 'Staff Details';
 include __DIR__ . '/../header.php';
 ?>
@@ -19,16 +34,30 @@ include __DIR__ . '/../header.php';
   .staff-stats{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem}
   .stat-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:rgba(255,255,255,0.12);border-radius:8px;font-size:.9rem;border:1px solid rgba(255,255,255,0.2)}
   .staff-actions{margin-bottom:1.5rem}
+  .staff-avatar{border-radius:12px;object-fit:cover;width:96px;height:96px;border:2px solid rgba(255,255,255,0.12)}
+  .staff-hero-counts{display:flex;flex-direction:column;align-items:flex-end;gap:.5rem}
 </style>
 
 <?php if ($staff): ?>
   <!-- Hero Section -->
   <div class="staff-hero">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-      <div>
-        <p class="text-uppercase text-muted small mb-2">Staff Member</p>
-        <h1 class="h2 mb-0"><?= htmlspecialchars($staff['full_name'] ?? 'Staff', ENT_QUOTES) ?></h1>
-        <p class="text-muted mb-0 mt-1"><?= htmlspecialchars($staff['email'] ?? '', ENT_QUOTES) ?></p>
+      <div class="d-flex align-items-center" style="gap:1rem;">
+        <img src="<?= htmlspecialchars($photoUrl ?? '', ENT_QUOTES) ?>" alt="Avatar" class="staff-avatar">
+        <div>
+          <p class="text-uppercase text-muted small mb-2">Staff Member</p>
+          <h1 class="h2 mb-0"><?= htmlspecialchars($staff['full_name'] ?? 'Staff', ENT_QUOTES) ?></h1>
+          <p class="text-muted mb-0 mt-1">
+            <?= htmlspecialchars($staff['email'] ?? '', ENT_QUOTES) ?>
+            <?php if (strpos($emailForGravatar, '@gmail.com') !== false): ?>
+              <span class="badge bg-light text-dark ms-2">Gmail</span>
+            <?php endif; ?>
+          </p>
+        </div>
+      </div>
+      <div class="staff-hero-counts">
+        <span class="stat-badge"><strong><?= (int) $moduleCount ?></strong> modules</span>
+        <span class="stat-badge"><strong><?= (int) $programmeCount ?></strong> programmes</span>
       </div>
     </div>
     <div class="staff-stats">
