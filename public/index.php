@@ -6,9 +6,11 @@ use Slim\Views\PhpRenderer;
 use App\Controllers\ProgrammeController;
 use App\Controllers\InterestController;
 use App\Controllers\AuthController;
+use App\Controllers\SuperAdminController;
 use App\Controllers\ModuleController;
 use App\Controllers\StaffController;
 use App\Models\ProgrammeModel;
+use App\Models\SuperAdminModel;
 use App\Models\ModuleModel;
 use App\Models\InterestModel;
 use App\Models\StaffModel;
@@ -51,11 +53,13 @@ $progModel     = new ProgrammeModel($pdo);
 $moduleModel   = new ModuleModel($pdo);
 $interestModel = new InterestModel($pdo);
 $staffModel    = new StaffModel($pdo);
+$superAdminModel = new SuperAdminModel($pdo);
 
 // Controllers
 $progCtrl     = new ProgrammeController($progModel, $renderer, $staffModel, $moduleModel, $interestModel);
 $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $mailConfig);
 $authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
+$superAdminCtrl = new SuperAdminController($pdo, $renderer, $mailConfig);
 $moduleCtrl   = new ModuleController($moduleModel, $progModel, $renderer);
 $staffCtrl    = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
@@ -71,6 +75,16 @@ $adminAuth = function ($request, $handler) {
     if (empty($_SESSION['admin_id'])) {
         return (new \Slim\Psr7\Response())
             ->withHeader('Location', base_url('/admin/login'))
+            ->withStatus(302);
+    }
+    return $handler->handle($request);
+};
+
+// Superadmin auth middleware
+$superAdminAuth = function ($request, $handler) {
+    if (empty($_SESSION['superadmin_id'])) {
+        return (new \Slim\Psr7\Response())
+            ->withHeader('Location', base_url('/superadmin/login'))
             ->withStatus(302);
     }
     return $handler->handle($request);
@@ -106,6 +120,15 @@ $app->post('/staff/login', [$authCtrl, 'staffLogin']);
 $app->get('/staff/logout', [$authCtrl, 'staffLogout']);
 $app->get('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetForm']);
 $app->post('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetSubmit']);
+
+// Admin invite / set password routes
+$app->get('/admin/set-password/{token:[a-f0-9]{64}}', [$authCtrl, 'adminSetPasswordForm']);
+$app->post('/admin/set-password/{token:[a-f0-9]{64}}', [$authCtrl, 'adminSetPasswordSubmit']);
+
+// Superadmin auth
+$app->get('/superadmin/login',  [$superAdminCtrl, 'loginForm']);
+$app->post('/superadmin/login', [$superAdminCtrl, 'login']);
+$app->get('/superadmin/logout', [$superAdminCtrl, 'logout']);
 
 // ── Admin routes (protected) ─────────────────────────────────────
 $app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCtrl, $staffCtrl, $authCtrl) {
@@ -150,6 +173,13 @@ $app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCt
     $group->post('/staff/{id:[0-9]+}',                       [$staffCtrl,    'update']);
     $group->post('/staff/{id:[0-9]+}/delete',                [$staffCtrl,    'delete']);
 })->add($adminAuth);
+
+// Superadmin routes (protected)
+$app->group('/superadmin', function ($group) use ($superAdminCtrl) {
+    $group->get('', [$superAdminCtrl, 'dashboard']);
+    $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
+    $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+})->add($superAdminAuth);
 
 // ── Staff routes (protected) ────────────────────────────────────
 $app->group('/staff', function ($group) use ($staffCtrl) {

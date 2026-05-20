@@ -298,6 +298,109 @@ class AuthController
         ]);
     }
 
+    // ─── ADMIN SET PASSWORD + SECRET CODE (from invite link) ─────────
+
+    public function adminSetPasswordForm(Request $req, Response $res, array $args): Response
+    {
+        $token = (string) ($args['token'] ?? '');
+        $stmt = $this->pdo->prepare(
+            'SELECT apr.id AS reset_id, apr.admin_id, apr.expires_at, apr.used_at, a.username
+             FROM admin_password_resets apr
+             JOIN admins a ON a.id = apr.admin_id
+             WHERE apr.token_hash = ?
+             LIMIT 1'
+        );
+        $stmt->execute([hash('sha256', $token)]);
+        $reset = $stmt->fetch();
+
+        if (!$reset || !empty($reset['used_at']) || strtotime($reset['expires_at']) < time()) {
+            return $this->renderer->render($res, 'admin/set-password.php', [
+                'token' => $token,
+                'reset' => null,
+                'error' => 'This link is invalid or has expired.',
+                'success' => false,
+            ]);
+        }
+
+        return $this->renderer->render($res, 'admin/set-password.php', [
+            'token' => $token,
+            'reset' => $reset,
+            'error' => null,
+            'success' => false,
+        ]);
+    }
+
+    public function adminSetPasswordSubmit(Request $req, Response $res, array $args): Response
+    {
+        $token = (string) ($args['token'] ?? '');
+        $data = $req->getParsedBody();
+        $password = (string) ($data['password'] ?? '');
+        $confirm = (string) ($data['confirm_password'] ?? '');
+        $secret = (string) ($data['secret_code'] ?? '');
+        $secret_confirm = (string) ($data['confirm_secret_code'] ?? '');
+
+        $stmt = $this->pdo->prepare(
+            'SELECT id, admin_id FROM admin_password_resets WHERE token_hash = ? AND used_at IS NULL AND expires_at > NOW() LIMIT 1 FOR UPDATE'
+        );
+        $this->pdo->beginTransaction();
+        try {
+            $stmt->execute([hash('sha256', $token)]);
+            $reset = $stmt->fetch();
+            if (!$reset) {
+                $this->pdo->rollBack();
+                return $this->renderer->render($res, 'admin/set-password.php', [
+                    'token' => $token,
+                    'reset' => null,
+                    'error' => 'This link is invalid or has expired.',
+                    'success' => false,
+                ]);
+            }
+
+            $error = null;
+            if (strlen($password) < 6) {
+                $error = 'Password must be at least 6 characters long.';
+            } elseif ($password !== $confirm) {
+                $error = 'Passwords do not match.';
+            } elseif (strlen($secret) < 4) {
+                $error = 'Secret code must be at least 4 characters.';
+            } elseif ($secret !== $secret_confirm) {
+                $error = 'Secret codes do not match.';
+            }
+
+            if ($error !== null) {
+                $this->pdo->rollBack();
+                return $this->renderer->render($res, 'admin/set-password.php', [
+                    'token' => $token,
+                    'reset' => $reset,
+                    'error' => $error,
+                    'success' => false,
+                ]);
+            }
+
+            $update = $this->pdo->prepare('UPDATE admins SET password_hash = ?, secret_code_hash = ?, secret_code_set_at = NOW() WHERE id = ?');
+            $update->execute([password_hash($password, PASSWORD_BCRYPT), password_hash($secret, PASSWORD_BCRYPT), (int) $reset['admin_id']]);
+
+            $markUsed = $this->pdo->prepare('UPDATE admin_password_resets SET used_at = NOW() WHERE id = ?');
+            $markUsed->execute([(int) $reset['id']]);
+
+            $this->pdo->commit();
+            return $this->renderer->render($res, 'admin/set-password.php', [
+                'token' => $token,
+                'reset' => $reset,
+                'error' => null,
+                'success' => true,
+            ]);
+        } catch (\Throwable $e) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            return $this->renderer->render($res, 'admin/set-password.php', [
+                'token' => $token,
+                'reset' => null,
+                'error' => 'An unexpected error occurred.',
+                'success' => false,
+            ]);
+        }
+    }
+
     private function sendStaffResetEmail(array $staff, string $token, string $expiresAt): void
     {
         $cfg = $this->mailConfig;
