@@ -5,6 +5,99 @@ class StaffModel
 {
     public function __construct(private \PDO $pdo) {}
 
+    public function createPasswordResetToken(int $staffId, ?int $createdBy = null): array
+    {
+        $this->pdo->prepare('DELETE FROM staff_password_resets WHERE staff_id = ? AND used_at IS NULL')
+                  ->execute([$staffId]);
+
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $expiresAt = (new \DateTimeImmutable('+1 hour'))->format('Y-m-d H:i:s');
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO staff_password_resets (staff_id, token_hash, expires_at, created_by)
+             VALUES (?, ?, ?, ?)'
+        );
+        $stmt->execute([$staffId, $tokenHash, $expiresAt, $createdBy]);
+
+        return [
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ];
+    }
+
+    public function findPasswordResetToken(string $token): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT spr.id AS reset_id,
+                    spr.staff_id,
+                    spr.expires_at,
+                    spr.used_at,
+                    spr.created_at,
+                    s.username,
+                    s.email,
+                    s.full_name,
+                    s.is_active
+             FROM staff_password_resets spr
+             JOIN staff s ON s.id = spr.staff_id
+             WHERE spr.token_hash = ?
+             LIMIT 1'
+        );
+        $stmt->execute([hash('sha256', $token)]);
+        $reset = $stmt->fetch();
+
+        if (!$reset || !empty($reset['used_at']) || strtotime($reset['expires_at']) < time()) {
+            return null;
+        }
+
+        return $reset;
+    }
+
+    public function resetPasswordWithToken(string $token, string $newPassword): bool
+    {
+        $tokenHash = hash('sha256', $token);
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare(
+                'SELECT id, staff_id
+                 FROM staff_password_resets
+                 WHERE token_hash = ?
+                   AND used_at IS NULL
+                   AND expires_at > NOW()
+                 LIMIT 1
+                 FOR UPDATE'
+            );
+            $stmt->execute([$tokenHash]);
+            $reset = $stmt->fetch();
+
+            if (!$reset) {
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            $updateStaff = $this->pdo->prepare('UPDATE staff SET password_hash = ? WHERE id = ?');
+            $updateStaff->execute([password_hash($newPassword, PASSWORD_BCRYPT), (int) $reset['staff_id']]);
+
+            $markUsed = $this->pdo->prepare('UPDATE staff_password_resets SET used_at = NOW() WHERE id = ?');
+            $markUsed->execute([(int) $reset['id']]);
+
+            $this->pdo->commit();
+            return true;
+        } catch (\Throwable) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            return false;
+        }
+    }
+
+    public function deletePasswordResetToken(string $token): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM staff_password_resets WHERE token_hash = ?');
+        $stmt->execute([hash('sha256', $token)]);
+    }
+
     public function getAll(): array
     {
         return $this->pdo->query('SELECT * FROM staff ORDER BY full_name')->fetchAll();

@@ -268,6 +268,22 @@ INSERT INTO `staff` (`id`, `username`, `password_hash`, `email`, `full_name`, `r
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `staff_password_resets`
+--
+
+CREATE TABLE `staff_password_resets` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `staff_id` int(10) UNSIGNED NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL,
+  `created_by` int(10) UNSIGNED DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `staff_modules`
 --
 
@@ -349,6 +365,15 @@ ALTER TABLE `staff`
   ADD KEY `fk_staff_creator` (`created_by`);
 
 --
+-- Indexes for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `token_hash` (`token_hash`),
+  ADD KEY `staff_id` (`staff_id`),
+  ADD KEY `created_by` (`created_by`);
+
+--
 -- Indexes for table `staff_modules`
 --
 ALTER TABLE `staff_modules`
@@ -397,6 +422,12 @@ ALTER TABLE `staff`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -418,6 +449,13 @@ ALTER TABLE `programme_modules`
 --
 ALTER TABLE `staff`
   ADD CONSTRAINT `fk_staff_creator` FOREIGN KEY (`created_by`) REFERENCES `admins` (`id`);
+
+--
+-- Constraints for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
+  ADD CONSTRAINT `fk_spr_admin` FOREIGN KEY (`created_by`) REFERENCES `admins` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_spr_staff` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `staff_modules`

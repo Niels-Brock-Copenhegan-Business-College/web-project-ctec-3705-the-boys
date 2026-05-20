@@ -54,21 +54,26 @@
   });
 
   const programmeSearch = document.getElementById('programmeSearch');
+  const programmeLevelFilter = document.getElementById('programmeLevelFilter');
   const programmeRows = Array.from(document.querySelectorAll('#programmesTable tbody .programme-row'));
   const noProgrammeResults = document.getElementById('noProgrammeResults');
 
   const filterProgrammes = function () {
-    if (!programmeSearch || !noProgrammeResults) {
+    if (!noProgrammeResults) {
       return;
     }
 
-    const query = programmeSearch.value.trim().toLowerCase();
+    const query = programmeSearch ? programmeSearch.value.trim().toLowerCase() : '';
+    const selectedLevel = programmeLevelFilter ? programmeLevelFilter.value.trim().toLowerCase() : '';
     let visibleCount = 0;
 
     programmeRows.forEach(function (row) {
-      const titleLink = row.querySelector('td:first-child .prog-link');
-      const titleText = (titleLink ? titleLink.textContent : '').trim().toLowerCase();
-      const matches = query === '' || titleText.includes(query);
+      const titleLink = row.querySelector('td:first-child a');
+      const titleText = (titleLink ? titleLink.textContent : row.textContent).trim().toLowerCase();
+      const rowLevel = (row.dataset.level || '').trim().toLowerCase();
+      const matchesQuery = query === '' || titleText.includes(query);
+      const matchesLevel = selectedLevel === '' || rowLevel === selectedLevel;
+      const matches = matchesQuery && matchesLevel;
       row.classList.toggle('d-none', !matches);
       if (matches) {
         visibleCount += 1;
@@ -80,5 +85,9 @@
 
   if (programmeSearch) {
     programmeSearch.addEventListener('input', filterProgrammes);
+  }
+
+  if (programmeLevelFilter) {
+    programmeLevelFilter.addEventListener('change', filterProgrammes);
   }
 })();

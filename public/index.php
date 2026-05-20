@@ -104,9 +104,11 @@ $app->get('/admin/logout', [$authCtrl, 'logout']);
 $app->get('/staff/login',  [$authCtrl, 'staffLoginForm']);
 $app->post('/staff/login', [$authCtrl, 'staffLogin']);
 $app->get('/staff/logout', [$authCtrl, 'staffLogout']);
+$app->get('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetForm']);
+$app->post('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetSubmit']);
 
 // ── Admin routes (protected) ─────────────────────────────────────
-$app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCtrl, $staffCtrl) {
+$app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCtrl, $staffCtrl, $authCtrl) {
     $group->get('',                                          [$progCtrl,     'adminDashboard']);
     // Programmes
     $group->get('/programmes',                               [$progCtrl,     'adminIndex']);
@@ -143,6 +145,7 @@ $app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCt
     $group->post('/staff/{id:[0-9]+}/assign-programme',      [$staffCtrl,    'assignProgramme']);
     $group->post('/staff/{id:[0-9]+}/unassign-module',       [$staffCtrl,    'unassignModule']);
     $group->post('/staff/{id:[0-9]+}/unassign-programme',    [$staffCtrl,    'unassignProgramme']);
+    $group->post('/staff/{id:[0-9]+}/send-password-reset',   [$authCtrl,     'adminSendStaffResetLink']);
     $group->get('/staff/{id:[0-9]+}/edit',                   [$staffCtrl,    'edit']);
     $group->post('/staff/{id:[0-9]+}',                       [$staffCtrl,    'update']);
     $group->post('/staff/{id:[0-9]+}/delete',                [$staffCtrl,    'delete']);
