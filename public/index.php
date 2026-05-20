@@ -55,9 +55,9 @@ $staffModel    = new StaffModel($pdo);
 // Controllers
 $progCtrl     = new ProgrammeController($progModel, $renderer, $staffModel, $moduleModel, $interestModel);
 $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $mailConfig);
-$authCtrl     = new AuthController($pdo, $renderer);
+$authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
 $moduleCtrl   = new ModuleController($moduleModel, $progModel, $renderer);
-$staffCtrl    = new StaffController($staffModel, $moduleModel, $progModel, $renderer);
+$staffCtrl    = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
@@ -94,8 +94,12 @@ $app->post('/interest', [$interestCtrl, 'register']);
 $app->get('/interest/withdraw/{token}', [$interestCtrl, 'withdraw']);
 
 // ── Auth routes ─────────────────────────────────────────────────
-$app->get('/admin/login',  [$authCtrl, 'loginForm']);
-$app->post('/admin/login', [$authCtrl, 'login']);
+$app->get('/login',          [$authCtrl, 'unifiedLoginForm']);
+$app->post('/login',         [$authCtrl, 'unifiedLogin']);
+$app->get('/forgot',         [$authCtrl, 'forgotForm']);
+$app->post('/forgot',        [$authCtrl, 'forgotSubmit']);
+$app->get('/admin/login',    [$authCtrl, 'loginForm']);
+$app->post('/admin/login',   [$authCtrl, 'login']);
 $app->get('/admin/logout', [$authCtrl, 'logout']);
 $app->get('/staff/login',  [$authCtrl, 'staffLoginForm']);
 $app->post('/staff/login', [$authCtrl, 'staffLogin']);
@@ -151,6 +155,7 @@ $app->group('/staff', function ($group) use ($staffCtrl) {
     $group->get('/modules/{id:[0-9]+}',    [$staffCtrl, 'moduleDetail']);
     $group->get('/programmes',             [$staffCtrl, 'programmes']);
     $group->get('/programmes/{id:[0-9]+}', [$staffCtrl, 'programmeDetail']);
+    $group->get('/programmes/{id:[0-9]+}/interests', [$staffCtrl, 'programmeInterests']);
     $group->get('/profile/edit',           [$staffCtrl, 'editProfile']);
     $group->post('/profile/edit',          [$staffCtrl, 'updateProfile']);
 })->add($staffAuth);

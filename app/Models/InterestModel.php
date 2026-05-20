@@ -96,4 +96,21 @@ class InterestModel
         $stmt->execute([$programmeId]);
         return (int) $stmt->fetchColumn();
     }
+
+    /**
+     * All registrations for a given email address, joined with programme title.
+     * Used by the forgot/account-lookup flow.
+     */
+    public function findByEmail(string $email): array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT ir.*, p.title AS programme_title
+             FROM interest_registrations ir
+             JOIN programmes p ON p.id = ir.programme_id
+             WHERE LOWER(ir.email) = LOWER(?)
+             ORDER BY ir.registered_at DESC'
+        );
+        $stmt->execute([$email]);
+        return $stmt->fetchAll();
+    }
 }

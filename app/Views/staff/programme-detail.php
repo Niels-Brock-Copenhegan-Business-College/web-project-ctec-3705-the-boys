@@ -125,6 +125,20 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                     <div class="prog-hero__stat-l">Students interested</div>
                 </div>
             </div>
+            <div class="mt-3">
+                <a href="<?= base_url('/staff/programmes/' . (int)$programme['id'] . '/interests') ?>"
+                   class="btn btn-sm"
+                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;">
+                    <i class="bi bi-people-fill me-1"></i>
+                    View interested students
+                    <?php if ((int)$programme['interest_count'] > 0): ?>
+                        <span class="ms-1 badge"
+                              style="background:rgba(255,255,255,.25);font-size:.7rem;">
+                            <?= (int)$programme['interest_count'] ?>
+                        </span>
+                    <?php endif; ?>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -239,6 +253,33 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                     <dt>Visibility</dt>
                     <dd><?= $programme['is_published'] ? '<span class="text-success fw-semibold">Published</span>' : '<span class="text-warning fw-semibold">Draft</span>' ?></dd>
                 </dl>
+            </div>
+
+            <!-- Interested students shortcut -->
+            <div class="staff-section-card mt-4">
+                <div class="staff-section-header">
+                    <h2 class="staff-section-title">
+                        <i class="bi bi-people me-1 text-primary"></i> Interested students
+                    </h2>
+                    <span class="badge bg-secondary rounded-pill"><?= (int)$programme['interest_count'] ?></span>
+                </div>
+                <?php if ((int)$programme['interest_count'] === 0): ?>
+                    <div class="staff-empty-state">
+                        <p class="text-muted mb-0">No students have registered interest yet.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="p-3">
+                        <p class="text-muted small mb-3">
+                            <strong><?= (int)$programme['interest_count'] ?></strong>
+                            student<?= (int)$programme['interest_count'] !== 1 ? 's have' : ' has' ?>
+                            registered interest in this programme.
+                        </p>
+                        <a href="<?= base_url('/staff/programmes/' . (int)$programme['id'] . '/interests') ?>"
+                           class="btn btn-primary btn-sm">
+                            <i class="bi bi-people-fill me-1"></i>View all interested students
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 

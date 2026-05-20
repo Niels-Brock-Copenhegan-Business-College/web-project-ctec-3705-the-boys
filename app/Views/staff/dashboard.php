@@ -114,7 +114,13 @@ $programmes = $programmes ?? [];
                 </div>
                 <div class="staff-profile-row">
                     <div class="staff-profile-avatar" aria-hidden="true">
-                        <?= mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1)) ?>
+                        <?php if (!empty($staff['photo'])): ?>
+                            <img src="<?= base_url('/uploads/staff/' . htmlspecialchars($staff['photo'], ENT_QUOTES)) ?>"
+                                 alt="Profile photo"
+                                 style="width:100%;height:100%;object-fit:cover;">
+                        <?php else: ?>
+                            <?= mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1)) ?>
+                        <?php endif; ?>
                     </div>
                     <div>
                         <div class="fw-semibold"><?= htmlspecialchars($staff['full_name'] ?? '', ENT_QUOTES) ?></div>

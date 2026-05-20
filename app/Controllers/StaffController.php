@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\StaffModel;
 use App\Models\ModuleModel;
 use App\Models\ProgrammeModel;
+use App\Models\InterestModel;
 use Slim\Views\PhpRenderer;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -14,7 +15,8 @@ class StaffController
         private StaffModel $staffModel,
         private ModuleModel $moduleModel,
         private ProgrammeModel $programmeModel,
-        private PhpRenderer $renderer
+        private PhpRenderer $renderer,
+        private InterestModel $interestModel
     ) {}
 
     private function flash(string $key, string $msg): void { $_SESSION['flash'][$key] = $msg; }
@@ -294,6 +296,36 @@ class StaffController
             'programme' => $programme,
             'backUrl'   => $backUrl,
             'backLabel' => $backLabel,
+        ]);
+    }
+
+    /**
+     * Interest registrations for a programme — read-only view for assigned staff.
+     */
+    public function programmeInterests(Request $req, Response $res, array $args): Response
+    {
+        $staffId     = (int) $_SESSION['staff_id'];
+        $programmeId = (int) $args['id'];
+
+        // Access control — must be assigned to this programme
+        $assigned   = $this->staffModel->getAssignedProgrammes($staffId);
+        $isAssigned = !empty(array_filter($assigned, fn($p) => (int)$p['id'] === $programmeId));
+
+        if (!$isAssigned) {
+            $this->flash('error', 'You are not linked to that programme.');
+            return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
+        }
+
+        $programme = $this->programmeModel->findById($programmeId);
+        if (!$programme) return $res->withStatus(404);
+
+        $interests = $this->interestModel->findByProgramme($programmeId);
+
+        return $this->renderer->render($res, 'staff/programme-interests.php', [
+            'staff'      => $this->staffModel->findById($staffId),
+            'programme'  => $programme,
+            'interests'  => $interests,
+            'flash'      => $this->getFlash(),
         ]);
     }
 
