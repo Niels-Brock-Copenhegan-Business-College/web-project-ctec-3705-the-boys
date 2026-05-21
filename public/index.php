@@ -92,12 +92,13 @@ $app->get('/programmes/{id:[0-9]+}', [$progCtrl, 'detail']);
 $app->get('/interest/register/{id:[0-9]+}', [$interestCtrl, 'showForm']);
 $app->post('/interest', [$interestCtrl, 'register']);
 $app->get('/interest/withdraw/{token}', [$interestCtrl, 'withdraw']);
+$app->get('/my-interests',            [$interestCtrl, 'myInterestsForm']);
+$app->post('/my-interests',           [$interestCtrl, 'myInterestsLookup']);
+$app->post('/my-interests/withdraw',  [$interestCtrl, 'myInterestsWithdraw']);
 
 // ── Auth routes ─────────────────────────────────────────────────
 $app->get('/login',          [$authCtrl, 'unifiedLoginForm']);
 $app->post('/login',         [$authCtrl, 'unifiedLogin']);
-$app->get('/forgot',         [$authCtrl, 'forgotForm']);
-$app->post('/forgot',        [$authCtrl, 'forgotSubmit']);
 $app->get('/admin/login',    [$authCtrl, 'loginForm']);
 $app->post('/admin/login',   [$authCtrl, 'login']);
 $app->get('/admin/logout', [$authCtrl, 'logout']);

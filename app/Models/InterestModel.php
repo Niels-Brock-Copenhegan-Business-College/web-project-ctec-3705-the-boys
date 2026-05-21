@@ -97,6 +97,18 @@ class InterestModel
         return (int) $stmt->fetchColumn();
     }
 
+    public function findOneByToken(string $token): ?array
+{
+    $stmt = $this->pdo->prepare(
+        'SELECT ir.*, p.title AS programme_title
+         FROM interest_registrations ir
+         JOIN programmes p ON p.id = ir.programme_id
+         WHERE ir.withdraw_token = ?'
+    );
+    $stmt->execute([$token]);
+    return $stmt->fetch() ?: null;
+}
+
     /**
      * All registrations for a given email address, joined with programme title.
      * Used by the forgot/account-lookup flow.
@@ -113,4 +125,16 @@ class InterestModel
         $stmt->execute([$email]);
         return $stmt->fetchAll();
     }
+    public function findByEmailWithLevel(string $email): array
+{
+    $stmt = $this->pdo->prepare(
+        'SELECT ir.*, p.title AS programme_title, p.level
+         FROM interest_registrations ir
+         JOIN programmes p ON p.id = ir.programme_id
+         WHERE LOWER(ir.email) = LOWER(?)
+         ORDER BY ir.registered_at DESC'
+    );
+    $stmt->execute([$email]);
+    return $stmt->fetchAll();
+}
 }

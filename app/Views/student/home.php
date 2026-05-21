@@ -225,7 +225,6 @@ $pg  = array_filter($programmes ?? [], fn($p) => $p['level'] === 'Postgraduate')
             <div><div class="uh-openday__name">Autumn Open Day</div><div class="uh-openday__meta">10:00 – 16:00 · All Campuses</div></div>
           </div>
         </div>
-        <a href="<?= base_url('/') ?>" class="uh-opendays__btn">Reserve your place</a>
       </div>
       <div class="uh-opendays__image" aria-hidden="true">
         <div class="uh-opendays__img-inner">
@@ -282,7 +281,7 @@ $pg  = array_filter($programmes ?? [], fn($p) => $p['level'] === 'Postgraduate')
       </div>
       <div class="uh-cta-banner__actions">
         <a href="<?= base_url('/') ?>" class="uh-cta-banner__primary">Explore programmes</a>
-        <a href="#open-days" class="uh-cta-banner__secondary">Book an open day</a>
+        <a href="<?= base_url('/my-interests') ?>" class="uh-cta-banner__secondary">Track my interests</a>
       </div>
     </div>
   </div>

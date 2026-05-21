@@ -139,6 +139,84 @@ class InterestController
         ]);
     }
 
+    // ─── MY INTERESTS — email lookup (GET) ──────────────────────
+public function myInterestsForm(Request $req, Response $res): Response
+{
+    return $this->renderer->render($res, 'student/my-interests.php', [
+        'error'         => null,
+        'registrations' => null,
+        'email'         => '',
+        'withdrawn'     => false,
+    ]);
+}
+
+// ─── MY INTERESTS — email lookup (POST) ─────────────────────
+public function myInterestsLookup(Request $req, Response $res): Response
+{
+    $d     = $req->getParsedBody();
+    $email = strtolower(trim($d['email'] ?? ''));
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return $this->renderer->render($res, 'student/my-interests.php', [
+            'error'         => 'Please enter a valid email address.',
+            'registrations' => null,
+            'email'         => htmlspecialchars($email, ENT_QUOTES),
+            'withdrawn'     => false,
+        ]);
+    }
+
+    $registrations = $this->model->findByEmailWithLevel($email);
+
+    return $this->renderer->render($res, 'student/my-interests.php', [
+        'error'         => null,
+        'registrations' => $registrations,
+        'email'         => htmlspecialchars($email, ENT_QUOTES),
+        'withdrawn'     => false,
+    ]);
+}
+
+// ─── MY INTERESTS — withdraw from list page (POST) ──────────
+public function myInterestsWithdraw(Request $req, Response $res): Response
+{
+    $d      = $req->getParsedBody();
+    $token  = trim($d['token']          ?? '');
+    $email  = strtolower(trim($d['redirect_email'] ?? ''));
+
+    // Fetch BEFORE deleting — need programme title + first name for the email
+    $registration = $this->model->findOneByToken($token);
+
+    // Now delete
+    $this->model->withdraw($token);
+
+    // Send confirmation email
+    if ($registration && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $programmeName = $registration['programme_title'] ?? 'the programme';
+        $body  = "Hi {$registration['first_name']},\n\n";
+        $body .= "This is a confirmation that your interest in \"{$programmeName}\" has been successfully withdrawn.\n\n";
+        $body .= "You will no longer receive updates about this programme.\n\n";
+        $body .= "If you change your mind, you can re-register at any time:\n";
+        $body .= base_url('/') . "\n\n";
+        $body .= "Regards,\nThe UniHub Admissions Team";
+
+        try {
+            $this->sendEmail([$email], 'Interest withdrawn — ' . $programmeName, $body);
+        } catch (\Throwable $e) {
+            error_log('Withdrawal email failed: ' . $e->getMessage());
+        }
+    }
+
+    // Re-fetch remaining registrations for updated list
+    $registrations = $email ? $this->model->findByEmailWithLevel($email) : [];
+
+    return $this->renderer->render($res, 'student/my-interests.php', [
+        'error'         => null,
+        'registrations' => $registrations,
+        'email'         => htmlspecialchars($email, ENT_QUOTES),
+        'withdrawn'     => true,
+    ]);
+
+}
+
     public function adminAll(Request $req, Response $res): Response
     {
         return $this->renderer->render($res, 'admin/interests-all.php', [

@@ -23,6 +23,8 @@
       <a href="mailto:admissions@unihub.ac.uk"><i class="bi bi-envelope me-1"></i>admissions@unihub.ac.uk</a>
     </div>
     <div class="uni-topbar__right">
+      <a href="<?= base_url('/my-interests') ?>"><i class="bi bi-bookmark-heart me-1"></i>My interests</a>
+      <span class="uni-topbar__sep">|</span>
       <a href="<?= base_url('/login') ?>"><i class="bi bi-person me-1"></i>Sign in</a>
       <span class="uni-topbar__sep">|</span>
       <a href="#open-days"><i class="bi bi-calendar-event me-1"></i>Open Days</a>
@@ -81,8 +83,8 @@
                   <i class="bi bi-calendar-event"></i>
                   <span>Book an open day</span>
                 </a>
-                <a class="uni-megamenu__cta" href="<?= base_url('/login') ?>">
-                  <i class="bi bi-person-check"></i>
+                <a class="uni-megamenu__cta" href="<?= base_url('/my-interests') ?>">
+                  <i class="bi bi-bookmark-heart"></i>
                   <span>Track your interest</span>
                 </a>
               </div>
@@ -92,11 +94,16 @@
         <li><a href="#open-days" class="uni-nav__link">Open Days</a></li>
         <li><a href="#why-unihub" class="uni-nav__link">About</a></li>
         <li><a href="#contact" class="uni-nav__link">Contact</a></li>
+        <li>
+          <a href="<?= base_url('/my-interests') ?>" class="uni-nav__link uni-nav__link--interest">
+            <i class="bi bi-bookmark-heart me-1" aria-hidden="true"></i>My interests
+          </a>
+        </li>
       </ul>
 
       <!-- CTA -->
       <div class="uni-nav__actions">
-        <a href="<?= base_url('/login') ?>" class="uni-nav__signin">
+        <a href="<?= base_url('/login') ?>" class="uni-nav__signin" aria-label="Staff and admin sign in">
           <i class="bi bi-person-circle"></i>
         </a>
         <a href="<?= base_url('/') ?>" class="uni-nav__cta">
@@ -124,8 +131,12 @@
       <li><a href="#contact">Contact</a></li>
     </ul>
     <div class="uni-mobile-menu__actions">
-      <a href="<?= base_url('/login') ?>" class="uni-mobile-menu__signin">Sign in</a>
-      <a href="<?= base_url('/') ?>" class="uni-mobile-menu__apply">Apply now</a>
+      <a href="<?= base_url('/my-interests') ?>" class="uni-mobile-menu__signin">
+        <i class="bi bi-bookmark-heart me-1"></i>My interests
+      </a>
+      <a href="<?= base_url('/login') ?>" class="uni-mobile-menu__apply" style="background:#e8f0fe;color:#1a56db;">
+        <i class="bi bi-person me-1"></i>Staff / Admin
+      </a>
     </div>
   </div>
 </div>
