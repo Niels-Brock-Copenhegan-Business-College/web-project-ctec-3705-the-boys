@@ -82,9 +82,14 @@ $withoutDescription = $totalModules - $withDescription;
                     <li><a class="dropdown-item" href="<?= base_url('/admin/modules/' . $m['id'] . '/edit') ?>">Edit</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                      <form method="POST" action="<?= base_url('/admin/modules/' . $m['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Delete <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>?');">
-                        <button type="submit" class="dropdown-item text-danger" aria-label="Delete <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">Delete</button>
-                      </form>
+                      <button type="button" 
+                              class="dropdown-item text-danger delete-btn" 
+                              data-id="<?= htmlspecialchars($m['id'], ENT_QUOTES) ?>"
+                              data-type="module"
+                              data-delete-url="<?= base_url('/admin/modules/' . $m['id'] . '/delete') ?>"
+                              data-title="<?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">
+                        Delete
+                      </button>
                     </li>
                   </ul>
                 </div>

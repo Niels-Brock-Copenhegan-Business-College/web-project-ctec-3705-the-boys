@@ -125,9 +125,14 @@ sort($levels);
                     <li><a class="dropdown-item" href="<?= base_url('/admin/programmes/' . $p['id'] . '/edit') ?>">Edit</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                      <form method="POST" action="<?= base_url('/admin/programmes/' . $p['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Delete <?= htmlspecialchars($p['title'], ENT_QUOTES) ?>?');">
-                        <button type="submit" class="dropdown-item text-danger">Delete</button>
-                      </form>
+                      <button type="button" 
+                              class="dropdown-item text-danger delete-btn" 
+                              data-id="<?= htmlspecialchars($p['id'], ENT_QUOTES) ?>"
+                              data-type="programme"
+                              data-delete-url="<?= base_url('/admin/programmes/' . $p['id'] . '/delete') ?>"
+                              data-title="<?= htmlspecialchars($p['title'], ENT_QUOTES) ?>">
+                        Delete
+                      </button>
                     </li>
                   </ul>
                 </div>

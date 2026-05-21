@@ -56,18 +56,19 @@ $staffModel    = new StaffModel($pdo);
 $superAdminModel = new SuperAdminModel($pdo);
 
 // Controllers
-$progCtrl     = new ProgrammeController($progModel, $renderer, $staffModel, $moduleModel, $interestModel);
+$progCtrl     = new ProgrammeController($pdo, $progModel, $renderer, $staffModel, $moduleModel, $interestModel);
 $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $mailConfig);
 $authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
 $superAdminCtrl = new SuperAdminController($pdo, $renderer, $mailConfig);
-$moduleCtrl   = new ModuleController($moduleModel, $progModel, $renderer);
-$staffCtrl    = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
+$moduleCtrl   = new ModuleController($pdo, $moduleModel, $progModel, $renderer);
+$staffCtrl    = new StaffController($pdo, $staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 if ($scriptName !== '/' && $scriptName !== '.') {
     $app->setBasePath($scriptName);
 }
+$app->addBodyParsingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 // Admin auth middleware
@@ -172,6 +173,8 @@ $app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCt
     $group->get('/staff/{id:[0-9]+}/edit',                   [$staffCtrl,    'edit']);
     $group->post('/staff/{id:[0-9]+}',                       [$staffCtrl,    'update']);
     $group->post('/staff/{id:[0-9]+}/delete',                [$staffCtrl,    'delete']);
+    // Authorization verification
+    $group->post('/verify-secret-code',                      [$moduleCtrl,   'verifySecretCode']);
 })->add($adminAuth);
 
 // Superadmin routes (protected)

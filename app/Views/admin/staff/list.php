@@ -117,9 +117,14 @@ $inactiveStaff = $totalStaff - $activeStaff;
                       </li>
                       <li><hr class="dropdown-divider"></li>
                       <li>
-                        <form method="POST" action="<?= base_url('/admin/staff/' . $s['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
-                          <button type="submit" class="dropdown-item text-danger">Delete</button>
-                        </form>
+                        <button type="button" 
+                                class="dropdown-item text-danger delete-btn" 
+                                data-id="<?= htmlspecialchars($s['id'], ENT_QUOTES) ?>"
+                                data-type="staff"
+                                data-delete-url="<?= base_url('/admin/staff/' . $s['id'] . '/delete') ?>"
+                                data-title="<?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>">
+                          Delete
+                        </button>
                       </li>
                     </ul>
                   </div>

@@ -12,6 +12,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class StaffController
 {
     public function __construct(
+        private \PDO $pdo,
         private StaffModel $staffModel,
         private ModuleModel $moduleModel,
         private ProgrammeModel $programmeModel,
@@ -181,6 +182,35 @@ class StaffController
         $this->staffModel->delete((int)$args['id']);
         $this->flash('success', 'Staff member deleted.');
         return $res->withHeader('Location', base_url('/admin/staff'))->withStatus(302);
+    }
+
+    /**
+     * Verify admin secret code for destructive action
+     */
+    public function verifySecretCode(Request $req, Response $res): Response
+    {
+        $adminId = (int)($_SESSION['admin_id'] ?? 0);
+        if (!$adminId) {
+            $res->getBody()->write(json_encode(['success' => false, 'message' => 'Unauthorized']));
+            return $res->withStatus(401)->withHeader('Content-Type', 'application/json');
+        }
+
+        $d = $req->getParsedBody();
+        $secretCode = trim((string)($d['secret_code'] ?? ''));
+
+        if (empty($secretCode)) {
+            $res->getBody()->write(json_encode(['success' => false, 'message' => 'Secret code required']));
+            return $res->withStatus(400)->withHeader('Content-Type', 'application/json');
+        }
+
+        $adminModel = new \App\Models\AdminModel($this->pdo);
+        if ($adminModel->verifySecretCode($adminId, $secretCode)) {
+            $res->getBody()->write(json_encode(['success' => true]));
+            return $res->withHeader('Content-Type', 'application/json');
+        }
+
+        $res->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid secret code']));
+        return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
     }
 
     // ── Staff portal ──────────────────────────────────────────────
