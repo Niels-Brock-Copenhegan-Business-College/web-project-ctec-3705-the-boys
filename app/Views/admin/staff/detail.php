@@ -28,45 +28,36 @@ $pageTitle = 'Staff Details';
 include __DIR__ . '/../header.php';
 ?>
 
-<style>
-  .staff-hero{background:linear-gradient(135deg,#0b1220 0%, #12243a 60%);color:#fff;padding:2rem;border-radius:12px;margin-bottom:2rem;box-shadow:0 8px 24px rgba(2,6,23,0.3)}
-  .staff-hero h1{font-weight:600;margin-bottom:.5rem}
-  .staff-stats{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem}
-  .stat-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.6rem 1rem;background:rgba(255,255,255,0.12);border-radius:8px;font-size:.9rem;border:1px solid rgba(255,255,255,0.2)}
-  .staff-actions{margin-bottom:1.5rem}
-  .staff-avatar{border-radius:12px;object-fit:cover;width:96px;height:96px;border:2px solid rgba(255,255,255,0.12)}
-  .staff-hero-counts{display:flex;flex-direction:column;align-items:flex-end;gap:.5rem}
-</style>
-
 <?php if ($staff): ?>
+  <a href="<?= base_url('/admin/staff') ?>" class="btn btn-outline-secondary mb-2">Back to Staff</a>
   <!-- Hero Section -->
-  <div class="staff-hero">
+  <div class="prog-hero">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-      <div class="d-flex align-items-center" style="gap:1rem;">
-        <img src="<?= htmlspecialchars($photoUrl ?? '', ENT_QUOTES) ?>" alt="Avatar" class="staff-avatar">
-        <div>
-          <p class="text-uppercase text-muted small mb-2">Staff Member</p>
-          <h1 class="h2 mb-0"><?= htmlspecialchars($staff['full_name'] ?? 'Staff', ENT_QUOTES) ?></h1>
-          <p class="text-muted mb-0 mt-1">
-            <?= htmlspecialchars($staff['email'] ?? '', ENT_QUOTES) ?>
-            <?php if (strpos($emailForGravatar, '@gmail.com') !== false): ?>
-              <span class="badge bg-light text-dark ms-2">Gmail</span>
-            <?php endif; ?>
-          </p>
-        </div>
+      <div>
+        <p class="text-uppercase text-muted small mb-2">Staff Overview</p>
+        <h1 class="h2 mb-0"><?= htmlspecialchars($staff['full_name'] ?? 'Staff', ENT_QUOTES) ?></h1>
+        <p class="mb-0 mt-2 text-white-50">
+          <?= htmlspecialchars($staff['email'] ?? '', ENT_QUOTES) ?>
+          <?php if (strpos($emailForGravatar, '@gmail.com') !== false): ?>
+            
+          <?php endif; ?>
+        </p>
       </div>
-      <div class="staff-hero-counts">
-        <span class="stat-badge"><strong><?= (int) $moduleCount ?></strong> modules</span>
-        <span class="stat-badge"><strong><?= (int) $programmeCount ?></strong> programmes</span>
+      <div class="text-end">
+        <?php if (!empty($photoUrl)): ?>
+          <img src="<?= htmlspecialchars($photoUrl ?? '', ENT_QUOTES) ?>" alt="Avatar" class="rounded-circle border border-2 border-white shadow-sm" style="width:72px; height:72px; object-fit:cover;">
+        <?php endif; ?>
       </div>
     </div>
-    <div class="staff-stats">
+
+    <div class="prog-stats">
       <span class="stat-badge">
-        <strong><?= htmlspecialchars($staff['username'] ?? 'N/A', ENT_QUOTES) ?></strong> username
+        <strong><?= (int) $moduleCount ?></strong> Modules
       </span>
       <span class="stat-badge">
-        <?= !empty($staff['is_active']) ? '✓ Active' : '⊘ Inactive' ?>
+        <strong><?= (int) $programmeCount ?></strong> Programmes
       </span>
+      
       <span class="stat-badge">
         Member since <?= !empty($staff['created_at']) ? date('Y', strtotime($staff['created_at'])) : 'N/A' ?>
       </span>
@@ -81,13 +72,39 @@ include __DIR__ . '/../header.php';
   </div>
 <?php endif; ?>
 
+<?php if (!empty($flash['error'])): ?>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($flash['error']) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+<?php endif; ?>
+
 <?php if (!$staff): ?>
   <div class="alert alert-warning">Staff member not found.</div>
 <?php else: ?>
-  <!-- Action Buttons -->
-  <div class="staff-actions d-flex gap-2 flex-wrap">
-    <a href="<?= base_url('/admin/staff/' . $staff['id'] . '/edit') ?>" class="btn btn-warning">Edit Staff</a>
-    <a href="<?= base_url('/admin/staff') ?>" class="btn btn-outline-secondary">Back to Staff</a>
+  <!-- Actions: moved under the hero to match other admin detail pages.
+       Primary action (Edit) is visible; less-frequent or destructive actions
+       are grouped inside a dropdown to reduce clutter and accidental clicks. -->
+  <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
+    <div class="btn-group">
+      <a href="<?= base_url('/admin/staff/' . $staff['id'] . '/edit') ?>" class="btn btn-warning">Edit Staff</a>
+      <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="visually-hidden">Toggle</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+        <li>
+          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/send-password-reset') ?>" class="m-0">
+            <button type="submit" class="dropdown-item" onclick="return confirm('Send a password reset link to this staff member?')">Send password reset</button>
+          </form>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Delete this staff member?');">
+            <button type="submit" class="dropdown-item text-danger">Delete staff</button>
+          </form>
+        </li>
+      </ul>
+    </div>
   </div>
 
   <div class="row g-4">
@@ -98,6 +115,8 @@ include __DIR__ . '/../header.php';
           <dl class="row mb-0">
             <dt class="col-sm-5">Username:</dt>
             <dd class="col-sm-7"><code><?= htmlspecialchars($staff['username'] ?? 'N/A', ENT_QUOTES) ?></code></dd>
+            <dt class="col-sm-5">Email:</dt>
+            <dd class="col-sm-7"><?= htmlspecialchars($staff['email'] ?? 'N/A', ENT_QUOTES) ?></dd>
             <dt class="col-sm-5">Status:</dt>
             <dd class="col-sm-7"><span class="badge <?= !empty($staff['is_active']) ? 'text-bg-success' : 'text-bg-secondary' ?>"><?= !empty($staff['is_active']) ? 'Active' : 'Inactive' ?></span></dd>
             <dt class="col-sm-5">Joined:</dt>

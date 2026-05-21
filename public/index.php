@@ -6,9 +6,11 @@ use Slim\Views\PhpRenderer;
 use App\Controllers\ProgrammeController;
 use App\Controllers\InterestController;
 use App\Controllers\AuthController;
+use App\Controllers\SuperAdminController;
 use App\Controllers\ModuleController;
 use App\Controllers\StaffController;
 use App\Models\ProgrammeModel;
+use App\Models\SuperAdminModel;
 use App\Models\ModuleModel;
 use App\Models\InterestModel;
 use App\Models\StaffModel;
@@ -51,19 +53,22 @@ $progModel     = new ProgrammeModel($pdo);
 $moduleModel   = new ModuleModel($pdo);
 $interestModel = new InterestModel($pdo);
 $staffModel    = new StaffModel($pdo);
+$superAdminModel = new SuperAdminModel($pdo);
 
 // Controllers
-$progCtrl     = new ProgrammeController($progModel, $renderer, $staffModel, $moduleModel, $interestModel);
+$progCtrl     = new ProgrammeController($pdo, $progModel, $renderer, $staffModel, $moduleModel, $interestModel);
 $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $mailConfig);
 $authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
-$moduleCtrl   = new ModuleController($moduleModel, $progModel, $renderer);
-$staffCtrl    = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
+$superAdminCtrl = new SuperAdminController($pdo, $renderer, $mailConfig);
+$moduleCtrl   = new ModuleController($pdo, $moduleModel, $progModel, $renderer);
+$staffCtrl    = new StaffController($pdo, $staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 if ($scriptName !== '/' && $scriptName !== '.') {
     $app->setBasePath($scriptName);
 }
+$app->addBodyParsingMiddleware();
 $app->addErrorMiddleware(true, true, true);
 
 // Admin auth middleware
@@ -71,6 +76,16 @@ $adminAuth = function ($request, $handler) {
     if (empty($_SESSION['admin_id'])) {
         return (new \Slim\Psr7\Response())
             ->withHeader('Location', base_url('/admin/login'))
+            ->withStatus(302);
+    }
+    return $handler->handle($request);
+};
+
+// Superadmin auth middleware
+$superAdminAuth = function ($request, $handler) {
+    if (empty($_SESSION['superadmin_id'])) {
+        return (new \Slim\Psr7\Response())
+            ->withHeader('Location', base_url('/superadmin/login'))
             ->withStatus(302);
     }
     return $handler->handle($request);
@@ -105,9 +120,20 @@ $app->get('/admin/logout', [$authCtrl, 'logout']);
 $app->get('/staff/login',  [$authCtrl, 'staffLoginForm']);
 $app->post('/staff/login', [$authCtrl, 'staffLogin']);
 $app->get('/staff/logout', [$authCtrl, 'staffLogout']);
+$app->get('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetForm']);
+$app->post('/staff/reset-password/{token:[a-f0-9]{64}}', [$authCtrl, 'staffResetSubmit']);
+
+// Admin invite / set password routes
+$app->get('/admin/set-password/{token:[a-f0-9]{64}}', [$authCtrl, 'adminSetPasswordForm']);
+$app->post('/admin/set-password/{token:[a-f0-9]{64}}', [$authCtrl, 'adminSetPasswordSubmit']);
+
+// Superadmin auth
+$app->get('/superadmin/login',  [$superAdminCtrl, 'loginForm']);
+$app->post('/superadmin/login', [$superAdminCtrl, 'login']);
+$app->get('/superadmin/logout', [$superAdminCtrl, 'logout']);
 
 // ── Admin routes (protected) ─────────────────────────────────────
-$app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCtrl, $staffCtrl) {
+$app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCtrl, $staffCtrl, $authCtrl) {
     $group->get('',                                          [$progCtrl,     'adminDashboard']);
     // Programmes
     $group->get('/programmes',                               [$progCtrl,     'adminIndex']);
@@ -144,10 +170,20 @@ $app->group('/admin', function ($group) use ($progCtrl, $moduleCtrl, $interestCt
     $group->post('/staff/{id:[0-9]+}/assign-programme',      [$staffCtrl,    'assignProgramme']);
     $group->post('/staff/{id:[0-9]+}/unassign-module',       [$staffCtrl,    'unassignModule']);
     $group->post('/staff/{id:[0-9]+}/unassign-programme',    [$staffCtrl,    'unassignProgramme']);
+    $group->post('/staff/{id:[0-9]+}/send-password-reset',   [$authCtrl,     'adminSendStaffResetLink']);
     $group->get('/staff/{id:[0-9]+}/edit',                   [$staffCtrl,    'edit']);
     $group->post('/staff/{id:[0-9]+}',                       [$staffCtrl,    'update']);
     $group->post('/staff/{id:[0-9]+}/delete',                [$staffCtrl,    'delete']);
+    // Authorization verification
+    $group->post('/verify-secret-code',                      [$moduleCtrl,   'verifySecretCode']);
 })->add($adminAuth);
+
+// Superadmin routes (protected)
+$app->group('/superadmin', function ($group) use ($superAdminCtrl) {
+    $group->get('', [$superAdminCtrl, 'dashboard']);
+    $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
+    $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+})->add($superAdminAuth);
 
 // ── Staff routes (protected) ────────────────────────────────────
 $app->group('/staff', function ($group) use ($staffCtrl) {

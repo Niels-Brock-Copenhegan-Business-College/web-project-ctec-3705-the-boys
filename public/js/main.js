@@ -99,4 +99,82 @@ document.addEventListener('DOMContentLoaded', () => {
       interestForm.classList.add('was-validated');
     });
   }
+
+  // ── Authorization modal for destructive actions ──────────────────
+  const secretCodeModalEl = document.getElementById('secretCodeModal');
+  if (secretCodeModalEl) {
+    const secretCodeModal = new bootstrap.Modal(secretCodeModalEl, { backdrop: 'static' });
+    const secretCodeForm = document.getElementById('secretCodeForm');
+    let pendingDelete = null; // { itemId, itemType, itemTitle }
+
+    const runDeleteVerification = async () => {
+      if (!pendingDelete) {
+        return;
+      }
+
+      const secretCode = document.getElementById('secretCodeInput').value.trim();
+      
+      if (!secretCode) {
+        document.getElementById('secretCodeError').textContent = 'Secret code is required';
+        document.getElementById('secretCodeError').style.display = 'block';
+        return;
+      }
+
+      const verifyRes = await fetch(apiUrl('/admin/verify-secret-code'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret_code: secretCode })
+      });
+
+      const verifyData = await verifyRes.json();
+
+      if (!verifyData.success) {
+        document.getElementById('secretCodeError').textContent = verifyData.message || 'Invalid secret code';
+        document.getElementById('secretCodeError').style.display = 'block';
+        return;
+      }
+
+      secretCodeModal.hide();
+
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = pendingDelete.deleteUrl;
+      document.body.appendChild(form);
+      form.submit();
+    };
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        pendingDelete = {
+          itemId: btn.dataset.id,
+          itemType: btn.dataset.type, // 'module', 'programme', 'staff'
+          deleteUrl: btn.dataset.deleteUrl,
+          itemTitle: btn.dataset.title
+        };
+        
+        document.getElementById('deleteItemTitle').textContent = pendingDelete.itemTitle;
+        document.getElementById('deleteItemInfo').style.display = 'block';
+        document.getElementById('secretCodeInput').value = '';
+        document.getElementById('secretCodeError').style.display = 'none';
+        document.getElementById('secretCodeInput').focus();
+        
+        secretCodeModal.show();
+      });
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', runDeleteVerification);
+
+    if (secretCodeForm) {
+      secretCodeForm.addEventListener('submit', e => {
+        e.preventDefault();
+        runDeleteVerification();
+      });
+    }
+
+    document.getElementById('secretCodeInput').addEventListener('input', () => {
+      document.getElementById('secretCodeError').style.display = 'none';
+    });
+  }
 });
+

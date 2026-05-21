@@ -1,0 +1,159 @@
+<?php
+
+namespace App\Controllers;
+
+use Slim\Views\PhpRenderer;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use App\Models\SuperAdminModel;
+
+class SuperAdminController
+{
+    public function __construct(
+        private \PDO $pdo,
+        private PhpRenderer $renderer,
+        private array $mailConfig = []
+    ) {}
+
+    public function loginForm(Request $req, Response $res): Response
+    {
+        if (!empty($_SESSION['superadmin_id'])) {
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+        $flash = $_SESSION['login_flash'] ?? [];
+        unset($_SESSION['login_flash']);
+        return $this->renderer->render($res, 'superadmin/login.php', [
+            'error' => null,
+            'flash' => $flash,
+            'oldUser' => '',
+        ]);
+    }
+
+    public function login(Request $req, Response $res): Response
+    {
+        $d = $req->getParsedBody();
+        $user = trim((string) ($d['username'] ?? ''));
+        $pass = (string) ($d['password'] ?? '');
+
+        $sam = new SuperAdminModel($this->pdo);
+        $sa = $sam->verifyLogin($user, $pass);
+        if ($sa) {
+            session_regenerate_id(true);
+            $_SESSION['superadmin_id'] = $sa['id'];
+            $_SESSION['superadmin_name'] = $sa['name'] ?? $sa['username'];
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+
+        return $this->renderer->render($res, 'superadmin/login.php', [
+            'error' => 'Incorrect username or password.',
+            'flash' => [],
+            'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+        ]);
+    }
+
+    public function logout(Request $req, Response $res): Response
+    {
+        session_destroy();
+        return $res->withHeader('Location', base_url('/superadmin/login'))->withStatus(302);
+    }
+
+    public function dashboard(Request $req, Response $res): Response
+    {
+        // Simple dashboard: list admins for management
+        $stmt = $this->pdo->query('SELECT id, username, password_hash FROM admins ORDER BY id ASC');
+        $admins = $stmt->fetchAll();
+        return $this->renderer->render($res, 'superadmin/dashboard.php', [
+            'admins' => $admins,
+            'flash' => $_SESSION['flash'] ?? [],
+        ]);
+    }
+
+    public function showCreateAdminForm(Request $req, Response $res): Response
+    {
+        $flash = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+        return $this->renderer->render($res, 'superadmin/create_admin.php', [
+            'flash' => $flash,
+            'errors' => [],
+            'old' => [],
+        ]);
+    }
+
+    public function createAdminSubmit(Request $req, Response $res): Response
+    {
+        $d = $req->getParsedBody();
+        $username = trim((string) ($d['username'] ?? ''));
+        $email = strtolower(trim((string) ($d['email'] ?? '')));
+        $name = trim((string) ($d['name'] ?? ''));
+
+        $errors = [];
+        if ($username === '') $errors[] = 'Username is required.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email is required.';
+
+        if (!empty($errors)) {
+            return $this->renderer->render($res, 'superadmin/create_admin.php', [
+                'flash' => [],
+                'errors' => $errors,
+                'old' => ['username' => $username, 'email' => $email, 'name' => $name],
+            ]);
+        }
+
+        // Create admin with empty password_hash (admin will set password via emailed link)
+        $stmt = $this->pdo->prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)');
+        $stmt->execute([$username, '']);
+        $adminId = (int) $this->pdo->lastInsertId();
+
+        // Create invite token
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $expiresAt = (new \DateTimeImmutable('+2 hours'))->format('Y-m-d H:i:s');
+        $createBy = (int) ($_SESSION['superadmin_id'] ?? 0);
+        $stmt = $this->pdo->prepare('INSERT INTO admin_password_resets (admin_id, token_hash, created_by, expires_at) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$adminId, $tokenHash, $createBy, $expiresAt]);
+
+        // Send invite email (best-effort)
+        try {
+            $this->sendAdminInviteEmail($email, $username, $name, $token, $expiresAt);
+            $_SESSION['flash']['success'] = 'Admin created and invite email sent.';
+        } catch (\Throwable $e) {
+            $_SESSION['flash']['error'] = 'Admin created but unable to send invite email.';
+        }
+
+        return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+    }
+
+    private function sendAdminInviteEmail(string $email, string $username, string $name, string $token, string $expiresAt): void
+    {
+        $cfg = $this->mailConfig;
+        $mailer = new \PHPMailer\PHPMailer\PHPMailer(true);
+        $mailer->isSMTP();
+        $mailer->Host = (string) ($cfg['host'] ?? '');
+        $mailer->Port = (int) ($cfg['port'] ?? 587);
+        $mailer->SMTPAuth = true;
+        $mailer->Username = (string) ($cfg['username'] ?? '');
+        $mailer->Password = (string) ($cfg['password'] ?? '');
+        $enc = strtolower((string) ($cfg['encryption'] ?? 'tls'));
+        $mailer->SMTPSecure = $enc === 'ssl' ? \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS : \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+        $mailer->setFrom((string) ($cfg['from_email'] ?? $cfg['username'] ?? ''), (string) ($cfg['from_name'] ?? 'UniHub'));
+        $mailer->addAddress($email);
+        $mailer->isHTML(true);
+        $mailer->Subject = 'Set up your admin account on UniHub';
+
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $inviteUrl = $scheme . '://' . $host . base_url('/admin/set-password/' . rawurlencode($token));
+
+        $recipient = htmlspecialchars($name ?: $username, ENT_QUOTES);
+        $expiresLabel = date('j F Y, g:i A', strtotime($expiresAt));
+
+        $mailer->Body = "<div style='font-family:Arial,sans-serif;line-height:1.6;color:#111;'>\n"
+            . "<h2>Welcome to UniHub</h2>\n"
+            . "<p>Hello {$recipient},</p>\n"
+            . "<p>A super administrator created an admin account for you (username: <strong>" . htmlspecialchars($username, ENT_QUOTES) . "</strong>).</p>\n"
+            . "<p><a href='" . htmlspecialchars($inviteUrl, ENT_QUOTES) . "' style='display:inline-block;padding:12px 16px;background:#0d6efd;color:#fff;border-radius:8px;text-decoration:none;'>Set your password & secret code</a></p>\n"
+            . "<p>This link expires at {$expiresLabel}.</p>\n"
+            . "</div>";
+        $mailer->AltBody = "Set up your admin account: {$inviteUrl}\nExpires at: {$expiresLabel}";
+        $mailer->send();
+    }
+}

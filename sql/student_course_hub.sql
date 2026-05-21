@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 19, 2026 at 11:50 AM
+-- Generation Time: May 21, 2026 at 11:56 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -30,16 +30,60 @@ SET time_zone = "+00:00";
 CREATE TABLE `admins` (
   `id` int(10) UNSIGNED NOT NULL,
   `username` varchar(100) NOT NULL,
-  `password_hash` varchar(255) NOT NULL
+  `password_hash` varchar(255) NOT NULL,
+  `secret_code_hash` varchar(255) DEFAULT NULL,
+  `secret_code_set_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `password_hash`) VALUES
-(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm'),
-(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2');
+INSERT INTO `admins` (`id`, `username`, `password_hash`, `secret_code_hash`, `secret_code_set_at`) VALUES
+(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm', NULL, NULL),
+(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL),
+(3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_action_logs`
+--
+
+CREATE TABLE `admin_action_logs` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `superadmin_id` int(10) UNSIGNED NOT NULL,
+  `admin_id` int(10) UNSIGNED DEFAULT NULL,
+  `action` varchar(191) NOT NULL,
+  `target_table` varchar(100) DEFAULT NULL,
+  `target_id` int(11) DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_password_resets`
+--
+
+CREATE TABLE `admin_password_resets` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `admin_id` int(10) UNSIGNED NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `created_by` int(10) UNSIGNED DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `admin_password_resets`
+--
+
+INSERT INTO `admin_password_resets` (`id`, `admin_id`, `token_hash`, `created_by`, `created_at`, `expires_at`, `used_at`) VALUES
+(1, 3, 'aebde7f8664d9ac9e5df155698c6fcb966b590ae8d14c4908597e8950028111b', 1, '2026-05-21 00:31:17', '2026-05-21 02:31:17', '2026-05-21 00:32:06');
 
 -- --------------------------------------------------------
 
@@ -164,7 +208,7 @@ INSERT INTO `programmes` (`id`, `title`, `level`, `description`, `image_url`, `i
 (4, 'MSc Cyber Security', 'Postgraduate', 'This programme develops practical and theoretical knowledge of protecting systems, networks, and data from digital threats. Students study ethical hacking, network security, digital forensics, and secure system design, preparing for roles in cyber defence, security analysis, and information protection.', 'uploads/programmes/1778703941_226b7b171a74.jpg', 1, '2026-05-13 20:06:26'),
 (5, 'BSc Software Engineering', 'Undergraduate', 'This programme concentrates on the full software development lifecycle, from requirements and design through testing, deployment, and maintenance. Students learn modern development practices such as version control, agile methods, DevOps, and scalable system design, preparing them for professional software engineering careers.', 'uploads/programmes/1778703966_bdd4eb9632d6.jpg', 1, '2026-05-13 20:17:54'),
 (6, 'BSc Accounting and Finance', 'Undergraduate', 'This programme builds a strong foundation in financial reporting, auditing, taxation, corporate finance, and business analysis. Students develop the knowledge and numerical skills needed to understand financial performance and support decision-making in accounting, banking, finance, and consultancy roles.', 'uploads/programmes/1778703990_73d5ba553293.jpg', 1, '2026-05-13 20:17:54'),
-(7, 'BA Digital Marketing', 'Undergraduate', 'This programme explores how businesses promote products and services through digital channels such as social media, content marketing, search, and analytics. Students learn branding, campaign planning, consumer behaviour, and performance analysis, preparing them for careers in digital marketing, advertising, and communications.', 'uploads/programmes/1778704014_efe0d9743a18.jpg', 1, '2026-05-13 20:17:54'),
+(7, 'BA Digital Marketing', 'Undergraduate', 'This programme explores how businesses promote products and services through digital channels such as social media, content marketing, search, and analytics. Students learn branding, campaign planning, consumer behaviour, and performance analysis, preparing them for careers in digital marketing, advertising, and communications.', 'uploads/programmes/1778704014_efe0d9743a18.jpg', 0, '2026-05-13 20:17:54'),
 (8, 'BEng Mechanical Engineering', 'Undergraduate', 'This programme combines engineering theory with practical design and problem-solving in areas such as mechanics, thermodynamics, materials, manufacturing, and machine design. Students gain the technical knowledge and analytical skills needed for careers in engineering, product development, manufacturing, and technical design.', 'uploads/programmes/1778704039_12a274a4e63b.jpg', 1, '2026-05-13 20:17:54'),
 (9, 'MSc Artificial Intelligence', 'Postgraduate', 'This programme examines how intelligent systems can learn, reason, and make decisions using data. Students study machine learning, neural networks, computer vision, natural language processing, and AI ethics, preparing them for advanced roles in AI development, research, and applied intelligent systems.', 'uploads/programmes/1778704055_9f3733f4aa7b.jpg', 1, '2026-05-13 20:17:54'),
 (10, 'MSc Project Management', 'Postgraduate', 'This programme develops the skills needed to plan, deliver, and control projects in a wide range of industries. Students study project planning, risk management, budgeting, quality, leadership, and agile delivery, preparing them for roles in project coordination, management, and business operations.', 'uploads/programmes/1778704087_ef876b79ea04.jpg', 1, '2026-05-13 20:17:54'),
@@ -196,23 +240,28 @@ INSERT INTO `programme_modules` (`programme_id`, `module_id`, `year_of_study`) V
 (2, 6, 1),
 (2, 7, 1),
 (2, 8, 1),
+(2, 11, 3),
+(2, 24, 2),
+(2, 39, 2),
+(2, 40, 3),
 (3, 9, 1),
 (3, 10, 1),
 (3, 11, 1),
 (4, 12, 1),
 (4, 13, 1),
+(5, 3, 2),
+(5, 5, 3),
 (5, 14, 1),
-(5, 15, 1),
+(5, 15, 2),
 (5, 16, 1),
-(5, 17, 1),
-(5, 18, 1),
-(6, 8, 1),
+(5, 18, 3),
 (6, 19, 1),
 (6, 20, 1),
 (6, 21, 1),
-(7, 7, 1),
-(7, 22, 1),
-(7, 23, 1),
+(6, 41, 3),
+(7, 7, 2),
+(7, 22, 2),
+(7, 23, 3),
 (7, 24, 1),
 (7, 25, 1),
 (8, 26, 1),
@@ -254,16 +303,16 @@ CREATE TABLE `staff` (
   `role` enum('instructor','coordinator','admin') NOT NULL DEFAULT 'instructor',
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by` int(10) UNSIGNED NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `photo` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `staff`
 --
 
-INSERT INTO `staff` (`id`, `username`, `password_hash`, `email`, `full_name`, `role`, `is_active`, `created_by`, `created_at`) VALUES
-(1, 'Niranjan', '$2y$10$rac3ucVuVNVz9WRP9opkqeqE7F3dk0g46ZdzEqXiiXNTFtaXU2IOG', 'niranjan123@gmail.com', 'Niranjan GC', 'instructor', 1, 2, '2026-05-14 23:23:54'),
-(2, 'Shubham', '$2y$10$gekl2Sm1lEmiPRa8KAh4CegX/NoLbDTLCBaTyIKeThdyCYO1aRO6K', 'shubham123@gmail.com', 'Shubham Sharma', 'instructor', 0, 2, '2026-05-15 00:04:40');
+INSERT INTO `staff` (`id`, `username`, `password_hash`, `email`, `full_name`, `role`, `is_active`, `created_by`, `created_at`, `photo`) VALUES
+(1, 'Niranjan', '$2y$10$rac3ucVuVNVz9WRP9opkqeqE7F3dk0g46ZdzEqXiiXNTFtaXU2IOG', 'niranjan123@gmail.com', 'Niranjan GC', 'instructor', 1, 2, '2026-05-14 23:23:54', 'staff_1_95fbeb46.png');
 
 -- --------------------------------------------------------
 
@@ -281,7 +330,24 @@ CREATE TABLE `staff_modules` (
 --
 
 INSERT INTO `staff_modules` (`staff_id`, `module_id`) VALUES
-(1, 1);
+(1, 1),
+(1, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `staff_password_resets`
+--
+
+CREATE TABLE `staff_password_resets` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `staff_id` int(10) UNSIGNED NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `created_by` int(10) UNSIGNED DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `expires_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -299,8 +365,32 @@ CREATE TABLE `staff_programmes` (
 --
 
 INSERT INTO `staff_programmes` (`staff_id`, `programme_id`) VALUES
-(1, 3),
-(2, 1);
+(1, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `super_admins`
+--
+
+CREATE TABLE `super_admins` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `name` varchar(191) NOT NULL,
+  `username` varchar(100) NOT NULL,
+  `email` varchar(191) NOT NULL,
+  `password_hash` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `last_login` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `super_admins`
+--
+
+INSERT INTO `super_admins` (`id`, `name`, `username`, `email`, `password_hash`, `is_active`, `created_at`, `updated_at`, `last_login`) VALUES
+(1, 'Lead Admin', 'Super', 'you@example.com', '$2y$10$0qT0kqcg3LSlSBzhO.sIkejnD2S2wM0teSsYSBDMLBtvcM0tCgp0q', 1, '2026-05-21 00:25:13', NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -312,6 +402,21 @@ INSERT INTO `staff_programmes` (`staff_id`, `programme_id`) VALUES
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`);
+
+--
+-- Indexes for table `admin_action_logs`
+--
+ALTER TABLE `admin_action_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_superadmin` (`superadmin_id`);
+
+--
+-- Indexes for table `admin_password_resets`
+--
+ALTER TABLE `admin_password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `u_token_hash` (`token_hash`),
+  ADD KEY `idx_admin_id` (`admin_id`);
 
 --
 -- Indexes for table `interest_registrations`
@@ -356,11 +461,27 @@ ALTER TABLE `staff_modules`
   ADD KEY `fk_sm_module` (`module_id`);
 
 --
+-- Indexes for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_staff_password_resets_token_hash` (`token_hash`),
+  ADD KEY `idx_staff_password_resets_staff_id` (`staff_id`);
+
+--
 -- Indexes for table `staff_programmes`
 --
 ALTER TABLE `staff_programmes`
   ADD PRIMARY KEY (`staff_id`,`programme_id`),
   ADD KEY `fk_sp_programme` (`programme_id`);
+
+--
+-- Indexes for table `super_admins`
+--
+ALTER TABLE `super_admins`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `username` (`username`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -370,7 +491,19 @@ ALTER TABLE `staff_programmes`
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `admin_action_logs`
+--
+ALTER TABLE `admin_action_logs`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `admin_password_resets`
+--
+ALTER TABLE `admin_password_resets`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `interest_registrations`
@@ -394,11 +527,35 @@ ALTER TABLE `programmes`
 -- AUTO_INCREMENT for table `staff`
 --
 ALTER TABLE `staff`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `super_admins`
+--
+ALTER TABLE `super_admins`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_action_logs`
+--
+ALTER TABLE `admin_action_logs`
+  ADD CONSTRAINT `fk_aal_superadmin` FOREIGN KEY (`superadmin_id`) REFERENCES `super_admins` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `admin_password_resets`
+--
+ALTER TABLE `admin_password_resets`
+  ADD CONSTRAINT `fk_apr_admin` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `interest_registrations`
@@ -425,6 +582,12 @@ ALTER TABLE `staff`
 ALTER TABLE `staff_modules`
   ADD CONSTRAINT `fk_sm_module` FOREIGN KEY (`module_id`) REFERENCES `modules` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_sm_staff` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `staff_password_resets`
+--
+ALTER TABLE `staff_password_resets`
+  ADD CONSTRAINT `fk_staff_password_resets_staff` FOREIGN KEY (`staff_id`) REFERENCES `staff` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `staff_programmes`
