@@ -18,7 +18,7 @@ $photoUrl   = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo
     <link rel="stylesheet" href="<?= base_url('/css/custom.css') ?>">
     <link rel="stylesheet" href="<?= base_url('/css/staff.css') ?>">
     <style>
-        /* ── Module hero — mirrors programme-detail style ──────────── */
+        /* ── Module hero — image as background ─────────────────── */
         .mod-hero {
             border-radius: 18px;
             overflow: hidden;
@@ -26,40 +26,49 @@ $photoUrl   = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo
             background: linear-gradient(135deg, #003366 0%, #00509e 100%);
             color: #fff;
             margin-bottom: 1.75rem;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
         }
-        /* When a photo exists the image sits below the text block */
+        .mod-hero__bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+        .mod-hero__bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to bottom,
+                rgba(0,20,60,.3) 0%,
+                rgba(0,20,60,.72) 50%,
+                rgba(0,20,60,.92) 100%
+            );
+        }
         .mod-hero__text {
-            padding: 2rem 2rem 1.5rem;
+            padding: 2rem;
             position: relative;
             z-index: 1;
         }
         .mod-hero__year {
             display: inline-flex; align-items: center; gap: .4rem;
-            background: rgba(255,255,255,.15); border-radius: 20px;
+            background: rgba(255,255,255,.18); border-radius: 20px;
             padding: .25rem .85rem; font-size: .75rem; font-weight: 600;
             letter-spacing: .06em; text-transform: uppercase; margin-bottom: .85rem;
+            backdrop-filter: blur(4px);
         }
         .mod-hero__title {
             font-size: 1.75rem; font-weight: 700; line-height: 1.2; margin-bottom: .75rem;
         }
         .mod-hero__desc {
-            font-size: .92rem; line-height: 1.7; opacity: .88; max-width: 680px;
+            font-size: .92rem; line-height: 1.7; opacity: .92; max-width: 680px;
             margin-bottom: 0;
         }
-        /* Photo banner — sits directly below description inside hero */
-        .mod-hero__image-wrap {
-            width: 100%;
-            max-height: 340px;
-            overflow: hidden;
-            display: block;
-        }
-        .mod-hero__image-wrap img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        /* No-photo: just a subtle bottom padding */
-        .mod-hero--no-photo .mod-hero__text { padding-bottom: 2rem; }
+        .mod-hero--no-photo { min-height: 180px; }
 
         /* ── Person row photo support ──────────────────────────────── */
         .staff-person-avatar--photo {
@@ -86,10 +95,17 @@ $photoUrl   = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo
         <?= htmlspecialchars($backLabel ?? '← Back', ENT_QUOTES) ?>
     </a>
 
-    <!-- ── Hero: text block + image inside same card ── -->
+    <!-- ── Hero: image as background, text overlaid ── -->
     <div class="mod-hero <?= $hasPhoto ? '' : 'mod-hero--no-photo' ?> mb-4">
 
-        <!-- Text content always on top -->
+        <?php if ($hasPhoto): ?>
+            <div class="mod-hero__bg"
+                 style="background-image: url('<?= $photoUrl ?>')"
+                 role="img"
+                 aria-label="<?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?>">
+            </div>
+        <?php endif; ?>
+
         <div class="mod-hero__text">
             <div class="mod-hero__year">
                 <i class="bi bi-calendar3"></i>
@@ -102,14 +118,6 @@ $photoUrl   = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo
                 <?= htmlspecialchars($module['description'] ?? '', ENT_QUOTES) ?>
             </p>
         </div>
-
-        <!-- Photo sits immediately after description, inside the hero card -->
-        <?php if ($hasPhoto): ?>
-            <div class="mod-hero__image-wrap">
-                <img src="<?= $photoUrl ?>"
-                     alt="<?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?>">
-            </div>
-        <?php endif; ?>
 
     </div>
 

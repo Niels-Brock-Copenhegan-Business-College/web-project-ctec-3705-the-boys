@@ -82,7 +82,7 @@ $programmes = $programmes ?? [];
                         <div class="staff-year-group">
                             <div class="staff-year-label">Year <?= $year ?></div>
                             <?php foreach ($yearModules as $m): ?>
-                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>"
+                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>?from=dashboard"
                                    class="staff-module-row"
                                    aria-label="View details for <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">
                                     <div class="staff-module-row__body">
@@ -152,7 +152,7 @@ $programmes = $programmes ?? [];
                     </div>
                 <?php else: ?>
                     <?php foreach ($programmes as $p): ?>
-                        <a href="<?= base_url('/staff/programmes/' . (int)$p['id']) ?>" class="staff-programme-row text-decoration-none">
+                        <a href="<?= base_url('/staff/programmes/' . (int)$p['id']) ?>?from=dashboard" class="staff-programme-row text-decoration-none">
                             <div>
                                 <div class="staff-programme-row__title">
                                     <?= htmlspecialchars($p['title'], ENT_QUOTES) ?>

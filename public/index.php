@@ -111,6 +111,32 @@ $app->get('/my-interests',            [$interestCtrl, 'myInterestsForm']);
 $app->post('/my-interests',           [$interestCtrl, 'myInterestsLookup']);
 $app->post('/my-interests/withdraw',  [$interestCtrl, 'myInterestsWithdraw']);
 
+// ── Static info pages ───────────────────────────────────────
+$app->get('/how-to-apply',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/how-to-apply.php', []);
+});
+$app->get('/fees-and-funding', function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/fees-and-funding.php', []);
+});
+$app->get('/scholarships',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/scholarships.php', []);
+});
+$app->get('/campus-life',      function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/campus-life.php', []);
+});
+$app->get('/privacy-policy',   function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/privacy-policy.php', []);
+});
+$app->get('/cookie-policy',    function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/cookie-policy.php', []);
+});
+$app->get('/accessibility',    function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/accessibility.php', []);
+});
+$app->get('/terms-of-use',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/terms-of-use.php', []);
+});
+
 // ── Auth routes ─────────────────────────────────────────────────
 $app->get('/login',          [$authCtrl, 'unifiedLoginForm']);
 $app->post('/login',         [$authCtrl, 'unifiedLogin']);

@@ -32,6 +32,7 @@
           <div class="uni-footer__col-head">The university</div>
           <ul>
             <li><a href="<?= base_url('/campus-life') ?>">Campus life</a></li>
+            <li><a href="<?= base_url('/accessibility') ?>">Accessibility</a></li>
           </ul>
         </div>
 
