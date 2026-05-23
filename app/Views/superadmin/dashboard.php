@@ -16,6 +16,7 @@ $flash = $flash ?? [];
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Superadmin dashboard</h3>
         <div>
+            <a href="<?= base_url('/superadmin/logs') ?>" class="btn btn-outline-dark">View logs</a>
             <a href="<?= base_url('/superadmin/admins/create') ?>" class="btn btn-primary">Create admin</a>
             <a href="<?= base_url('/superadmin/logout') ?>" class="btn btn-outline-secondary">Logout</a>
         </div>

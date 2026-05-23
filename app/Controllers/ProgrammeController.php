@@ -232,7 +232,13 @@ class ProgrammeController
 
     public function destroy(Request $req, Response $res, array $args): Response
     {
-        $this->model->delete((int)$args['id']);
+        $programmeId = (int) $args['id'];
+        $this->model->delete($programmeId);
+        \app_log('warning', 'Admin deleted programme', [
+            'admin_id' => (int) ($_SESSION['admin_id'] ?? 0),
+            'programme_id' => $programmeId,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
         return $res->withHeader('Location', base_url('/admin/programmes'))->withStatus(302);
     }
 
@@ -260,6 +266,12 @@ class ProgrammeController
             $res->getBody()->write(json_encode(['success' => true]));
             return $res->withHeader('Content-Type', 'application/json');
         }
+
+        \app_log('warning', 'Wrong admin secret code for programme delete', [
+            'admin_id' => $adminId,
+            'programme_id' => (int) ($args['id'] ?? 0),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
 
         $res->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid secret code']));
         return $res->withStatus(403)->withHeader('Content-Type', 'application/json');

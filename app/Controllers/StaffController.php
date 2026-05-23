@@ -179,7 +179,8 @@ class StaffController
 
     public function delete(Request $req, Response $res, array $args): Response
     {
-        $this->staffModel->delete((int)$args['id']);
+        $staffId = (int) $args['id'];
+        $this->staffModel->delete($staffId);
         $this->flash('success', 'Staff member deleted.');
         return $res->withHeader('Location', base_url('/admin/staff'))->withStatus(302);
     }
@@ -208,6 +209,12 @@ class StaffController
             $res->getBody()->write(json_encode(['success' => true]));
             return $res->withHeader('Content-Type', 'application/json');
         }
+
+        \app_log('warning', 'Wrong admin secret code for staff delete or assignment', [
+            'admin_id' => $adminId,
+            'staff_id' => (int) ($args['id'] ?? 0),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
 
         $res->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid secret code']));
         return $res->withStatus(403)->withHeader('Content-Type', 'application/json');

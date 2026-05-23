@@ -122,6 +122,75 @@ class SuperAdminController
         return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
     }
 
+    public function logs(Request $req, Response $res): Response
+    {
+        $entries = [];
+        $pdo = $GLOBALS['app_pdo'] ?? null;
+        if ($pdo instanceof \PDO) {
+            try {
+                $stmt = $pdo->query('SELECT id, created_at AS time, level, message, context FROM audit_logs ORDER BY id DESC LIMIT 1000');
+                $rows = $stmt->fetchAll();
+                foreach ($rows as $r) {
+                    $r['context'] = $r['context'] ? json_decode($r['context'], true) : [];
+                    $entries[] = $r;
+                }
+            } catch (\PDOException $e) {
+                $sqlState = $e->getCode();
+                if ($sqlState === '42S02' || strpos($e->getMessage(), '1146') !== false) {
+                    // Table missing — try to create it (best-effort)
+                    try {
+                        $create = "CREATE TABLE IF NOT EXISTS `audit_logs` (
+                            `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                            `created_at` DATETIME NOT NULL,
+                            `level` VARCHAR(20) NOT NULL,
+                            `message` TEXT NOT NULL,
+                            `context` JSON DEFAULT NULL,
+                            `ip` VARCHAR(45) DEFAULT NULL,
+                            `created_by` INT DEFAULT NULL
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+                        $pdo->exec($create);
+                        // No entries yet after creating
+                        $entries = [];
+                    } catch (\Throwable $e2) {
+                        $_SESSION['flash']['error'] = 'Log table is missing and could not be created automatically. Please run the migration or check DB permissions.';
+                    }
+                } else {
+                    $_SESSION['flash']['error'] = 'Unable to read audit logs: ' . $e->getMessage();
+                }
+            }
+        }
+
+        return $this->renderer->render($res, 'superadmin/logs.php', [
+            'entries' => $entries,
+        ]);
+    }
+
+    public function deleteLog(Request $req, Response $res): Response
+    {
+        $data = $req->getParsedBody();
+        $id = isset($data['id']) ? (int) $data['id'] : null;
+
+        if ($id === null) {
+            $_SESSION['flash']['error'] = 'Unable to delete log entry.';
+            return $res->withHeader('Location', base_url('/superadmin/logs'))->withStatus(302);
+        }
+
+        $pdo = $GLOBALS['app_pdo'] ?? null;
+        if ($pdo instanceof \PDO) {
+            try {
+                $stmt = $pdo->prepare('DELETE FROM audit_logs WHERE id = ?');
+                $stmt->execute([$id]);
+                $_SESSION['flash']['success'] = 'Log entry deleted.';
+            } catch (\PDOException $e) {
+                $_SESSION['flash']['error'] = 'Unable to delete log entry: ' . $e->getMessage();
+            }
+            return $res->withHeader('Location', base_url('/superadmin/logs'))->withStatus(302);
+        }
+
+        $_SESSION['flash']['error'] = 'DB not available; cannot delete log entries.';
+        return $res->withHeader('Location', base_url('/superadmin/logs'))->withStatus(302);
+    }
+
     private function sendAdminInviteEmail(string $email, string $username, string $name, string $token, string $expiresAt): void
     {
         $cfg = $this->mailConfig;

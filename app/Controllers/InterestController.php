@@ -222,7 +222,8 @@ class InterestController
 
     public function adminDelete(Request $req, Response $res, array $args): Response
     {
-        $this->model->delete((int)$args['id']);
+        $interestId = (int) $args['id'];
+        $this->model->delete($interestId);
         return $res->withHeader('Location', $_SERVER['HTTP_REFERER'] ?? base_url('/admin/programmes'))->withStatus(302);
     }
 }

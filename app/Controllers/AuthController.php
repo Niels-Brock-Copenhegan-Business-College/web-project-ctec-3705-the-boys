@@ -51,6 +51,7 @@ class AuthController
         $d    = $req->getParsedBody();
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
+        $path = (string) $req->getUri()->getPath();
 
         // 1. Try admin
         $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
@@ -75,7 +76,16 @@ class AuthController
             return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
         }
 
-        // 3. No match
+        // unifiedLogin() is only used for the login POST endpoints
+        // so always log failed attempts here (admins + staff).
+        \app_log('warning', 'Failed login attempt', [
+            'area' => str_replace('/login', '', $path) ?: 'unified',
+            'username' => $user,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+            'method' => $req->getMethod(),
+            'path' => $path,
+        ]);
+
         return $this->renderer->render($res, 'login.php', [
             'error'   => 'Incorrect username or password.',
             'flash'   => [],

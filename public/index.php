@@ -16,6 +16,7 @@ use App\Models\InterestModel;
 use App\Models\StaffModel;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../app/Helpers/logging.php';
 
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
@@ -44,6 +45,9 @@ $pdo = new PDO($dsn, $dbConfig['user'], $dbConfig['pass'], [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ]);
+
+// make PDO available to helper logger
+$GLOBALS['app_pdo'] = $pdo;
 
 // Renderer
 $renderer = new PhpRenderer(__DIR__ . '/../app/Views');
@@ -182,6 +186,8 @@ $app->group('/superadmin', function ($group) use ($superAdminCtrl) {
     $group->get('', [$superAdminCtrl, 'dashboard']);
     $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
     $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+    $group->get('/logs', [$superAdminCtrl, 'logs']);
+    $group->post('/logs/delete', [$superAdminCtrl, 'deleteLog']);
 })->add($superAdminAuth);
 
 // ── Staff routes (protected) ────────────────────────────────────

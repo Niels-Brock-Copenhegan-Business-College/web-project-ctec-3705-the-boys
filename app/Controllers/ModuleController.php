@@ -127,7 +127,13 @@ class ModuleController
 
     public function destroy(Request $req, Response $res, array $args): Response
     {
-        $this->model->delete((int)$args['id']);
+        $moduleId = (int) $args['id'];
+        $this->model->delete($moduleId);
+        \app_log('warning', 'Admin deleted module', [
+            'admin_id' => (int) ($_SESSION['admin_id'] ?? 0),
+            'module_id' => $moduleId,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
         return $res->withHeader('Location', base_url('/admin/modules'))->withStatus(302);
     }
 
@@ -155,6 +161,12 @@ class ModuleController
             $res->getBody()->write(json_encode(['success' => true]));
             return $res->withHeader('Content-Type', 'application/json');
         }
+
+        \app_log('warning', 'Wrong admin secret code for module delete', [
+            'admin_id' => $adminId,
+            'module_id' => (int) ($args['id'] ?? 0),
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
 
         $res->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid secret code']));
         return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
