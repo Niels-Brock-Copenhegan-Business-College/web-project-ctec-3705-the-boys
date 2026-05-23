@@ -12,7 +12,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class StaffController
 {
     public function __construct(
-        private \PDO $pdo,
         private StaffModel $staffModel,
         private ModuleModel $moduleModel,
         private ProgrammeModel $programmeModel,
@@ -184,35 +183,6 @@ class StaffController
         return $res->withHeader('Location', base_url('/admin/staff'))->withStatus(302);
     }
 
-    /**
-     * Verify admin secret code for destructive action
-     */
-    public function verifySecretCode(Request $req, Response $res): Response
-    {
-        $adminId = (int)($_SESSION['admin_id'] ?? 0);
-        if (!$adminId) {
-            $res->getBody()->write(json_encode(['success' => false, 'message' => 'Unauthorized']));
-            return $res->withStatus(401)->withHeader('Content-Type', 'application/json');
-        }
-
-        $d = $req->getParsedBody();
-        $secretCode = trim((string)($d['secret_code'] ?? ''));
-
-        if (empty($secretCode)) {
-            $res->getBody()->write(json_encode(['success' => false, 'message' => 'Secret code required']));
-            return $res->withStatus(400)->withHeader('Content-Type', 'application/json');
-        }
-
-        $adminModel = new \App\Models\AdminModel($this->pdo);
-        if ($adminModel->verifySecretCode($adminId, $secretCode)) {
-            $res->getBody()->write(json_encode(['success' => true]));
-            return $res->withHeader('Content-Type', 'application/json');
-        }
-
-        $res->getBody()->write(json_encode(['success' => false, 'message' => 'Invalid secret code']));
-        return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
-    }
-
     // ── Staff portal ──────────────────────────────────────────────
 
     /**
@@ -224,10 +194,42 @@ class StaffController
         $modules    = $this->staffModel->getAssignedModules($staffId);
         $programmes = $this->staffModel->getAssignedProgrammes($staffId);
 
+        // ── Total interest count across all assigned programmes ──
+        $totalInterest = array_sum(array_column($programmes, 'interest_count'));
+
+        // ── Recent interests (last 7 days) per programme ─────────
+        $recentInterests = [];
+        foreach ($programmes as $p) {
+            $stmt = $this->staffModel->getPdo()->prepare(
+                'SELECT ir.first_name, ir.last_name, ir.registered_at, p.title AS programme_title
+                 FROM interest_registrations ir
+                 JOIN programmes p ON p.id = ir.programme_id
+                 WHERE ir.programme_id = ?
+                 AND ir.registered_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 ORDER BY ir.registered_at DESC LIMIT 5'
+            );
+            $stmt->execute([(int)$p['id']]);
+            foreach ($stmt->fetchAll() as $row) {
+                $recentInterests[] = $row;
+            }
+        }
+        usort($recentInterests, fn($a, $b) => strtotime($b['registered_at']) - strtotime($a['registered_at']));
+        $recentInterests = array_slice($recentInterests, 0, 5);
+
+        // ── Draft programmes warning ──────────────────────────────
+        $draftProgrammes = array_filter($programmes, fn($p) => !(int)$p['is_published']);
+
+        // ── Module coverage per programme ─────────────────────────
+        // my_module_count already in getAssignedProgrammes query
+
         return $this->renderer->render($res, 'staff/dashboard.php', [
-            'staff'      => $this->staffModel->findById($staffId),
-            'modules'    => $modules,
-            'programmes' => $programmes,
+            'staff'           => $this->staffModel->findById($staffId),
+            'modules'         => $modules,
+            'programmes'      => $programmes,
+            'totalInterest'   => $totalInterest,
+            'recentInterests' => $recentInterests,
+            'draftProgrammes' => array_values($draftProgrammes),
+            'flash'           => $this->getFlash(),
         ]);
     }
 
@@ -378,6 +380,7 @@ class StaffController
         $staff    = $this->staffModel->findById($staffId);
         $d        = $req->getParsedBody();
         $fullName = $this->clean($d['full_name'] ?? '');
+        $bio      = trim($d['bio'] ?? '');
         $errors   = [];
 
         if (!$fullName) $errors['full_name'] = 'Full name is required.';
@@ -417,7 +420,7 @@ class StaffController
             ]);
         }
 
-        $this->staffModel->update($staffId, ['full_name' => $fullName, 'photo' => $newPhoto]);
+        $this->staffModel->update($staffId, ['full_name' => $fullName, 'photo' => $newPhoto, 'bio' => $bio]);
         $_SESSION['staff_name'] = $fullName;
 
         $this->flash('success', 'Profile updated successfully.');

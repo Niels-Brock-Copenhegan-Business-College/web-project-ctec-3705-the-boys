@@ -194,6 +194,18 @@ $initials  = mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1));
                 <?php endif; ?>
             </div>
 
+            <!-- Bio -->
+            <div class="mb-4">
+                <label for="bio" class="form-label fw-medium">Bio</label>
+                <textarea id="bio"
+                          name="bio"
+                          rows="4"
+                          class="form-control"
+                          maxlength="500"
+                          placeholder="A short paragraph about yourself — this is shown to students on programme pages…"><?= htmlspecialchars($staff['bio'] ?? '', ENT_QUOTES) ?></textarea>
+                <div class="form-text">Max 500 characters. Shown to prospective students on programme pages.</div>
+            </div>
+
             <!-- Photo upload -->
             <div class="mb-4">
                 <label class="form-label fw-medium d-block">Profile photo</label>

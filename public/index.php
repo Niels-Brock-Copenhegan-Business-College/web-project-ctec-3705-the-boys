@@ -61,7 +61,7 @@ $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $m
 $authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
 $superAdminCtrl = new SuperAdminController($pdo, $renderer, $mailConfig);
 $moduleCtrl   = new ModuleController($pdo, $moduleModel, $progModel, $renderer);
-$staffCtrl    = new StaffController($pdo, $staffModel, $moduleModel, $progModel, $renderer, $interestModel);
+$staffCtrl = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));

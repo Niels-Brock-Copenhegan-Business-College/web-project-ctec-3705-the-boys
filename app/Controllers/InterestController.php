@@ -73,8 +73,9 @@ class InterestController
         }
 
         $mailer->isHTML(false);
-        $mailer->Subject = $subject;
-        $mailer->Body = $body;
+        $mailer->CharSet  = 'UTF-8';
+        $mailer->Subject  = $subject;
+        $mailer->Body     = $body;
         $mailer->send();
     }
 
@@ -117,6 +118,22 @@ class InterestController
             'programme_id' => $progId,
         ]);
 
+        // Send registration confirmation email
+        if ($registered && $prog) {
+            $programmeName = $prog['title'] ?? 'the programme';
+            $body  = "Hi {$firstName},\n\n";
+            $body .= "Thank you for registering your interest in \"{$programmeName}\" at UniHub University.\n\n";
+            $body .= "We will keep you updated about open days, application deadlines, and any programme news.\n\n";
+            $body .= "You can view or withdraw your interest at any time by visiting: My-Interests\n";
+            $body .= "Regards,\nThe UniHub Admissions Team";
+
+            try {
+                $this->sendEmail([$email], 'Interest confirmed - ' . $programmeName, $body);
+            } catch (\Throwable $e) {
+                error_log('Registration email failed: ' . $e->getMessage());
+            }
+        }
+
         return $this->renderer->render($res, 'student/register-interest.php', [
             'prog'    => $prog,
             'errors'  => $registered ? [] : ['You are already registered for this programme.'],
@@ -138,84 +155,6 @@ class InterestController
             'interests' => $this->model->findByProgramme((int)$args['pid']),
         ]);
     }
-
-    // ─── MY INTERESTS — email lookup (GET) ──────────────────────
-public function myInterestsForm(Request $req, Response $res): Response
-{
-    return $this->renderer->render($res, 'student/my-interests.php', [
-        'error'         => null,
-        'registrations' => null,
-        'email'         => '',
-        'withdrawn'     => false,
-    ]);
-}
-
-// ─── MY INTERESTS — email lookup (POST) ─────────────────────
-public function myInterestsLookup(Request $req, Response $res): Response
-{
-    $d     = $req->getParsedBody();
-    $email = strtolower(trim($d['email'] ?? ''));
-
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        return $this->renderer->render($res, 'student/my-interests.php', [
-            'error'         => 'Please enter a valid email address.',
-            'registrations' => null,
-            'email'         => htmlspecialchars($email, ENT_QUOTES),
-            'withdrawn'     => false,
-        ]);
-    }
-
-    $registrations = $this->model->findByEmailWithLevel($email);
-
-    return $this->renderer->render($res, 'student/my-interests.php', [
-        'error'         => null,
-        'registrations' => $registrations,
-        'email'         => htmlspecialchars($email, ENT_QUOTES),
-        'withdrawn'     => false,
-    ]);
-}
-
-// ─── MY INTERESTS — withdraw from list page (POST) ──────────
-public function myInterestsWithdraw(Request $req, Response $res): Response
-{
-    $d      = $req->getParsedBody();
-    $token  = trim($d['token']          ?? '');
-    $email  = strtolower(trim($d['redirect_email'] ?? ''));
-
-    // Fetch BEFORE deleting — need programme title + first name for the email
-    $registration = $this->model->findOneByToken($token);
-
-    // Now delete
-    $this->model->withdraw($token);
-
-    // Send confirmation email
-    if ($registration && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $programmeName = $registration['programme_title'] ?? 'the programme';
-        $body  = "Hi {$registration['first_name']},\n\n";
-        $body .= "This is a confirmation that your interest in \"{$programmeName}\" has been successfully withdrawn.\n\n";
-        $body .= "You will no longer receive updates about this programme.\n\n";
-        $body .= "If you change your mind, you can re-register at any time:\n";
-        $body .= base_url('/') . "\n\n";
-        $body .= "Regards,\nThe UniHub Admissions Team";
-
-        try {
-            $this->sendEmail([$email], 'Interest withdrawn — ' . $programmeName, $body);
-        } catch (\Throwable $e) {
-            error_log('Withdrawal email failed: ' . $e->getMessage());
-        }
-    }
-
-    // Re-fetch remaining registrations for updated list
-    $registrations = $email ? $this->model->findByEmailWithLevel($email) : [];
-
-    return $this->renderer->render($res, 'student/my-interests.php', [
-        'error'         => null,
-        'registrations' => $registrations,
-        'email'         => htmlspecialchars($email, ENT_QUOTES),
-        'withdrawn'     => true,
-    ]);
-
-}
 
     public function adminAll(Request $req, Response $res): Response
     {
@@ -302,5 +241,91 @@ public function myInterestsWithdraw(Request $req, Response $res): Response
     {
         $this->model->delete((int)$args['id']);
         return $res->withHeader('Location', $_SERVER['HTTP_REFERER'] ?? base_url('/admin/programmes'))->withStatus(302);
+    }
+
+    // ── Student: my interests lookup ─────────────────────────────
+
+    public function myInterestsForm(Request $req, Response $res): Response
+    {
+        $flash = $_SESSION['login_flash'] ?? [];
+        unset($_SESSION['login_flash']);
+
+        // Auto-lookup if ?email= param present (e.g. after withdrawal redirect)
+        $email         = strtolower(trim($req->getQueryParams()['email'] ?? ''));
+        $registrations = null;
+
+        if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $registrations = $this->model->findByEmail($email);
+        }
+
+        return $this->renderer->render($res, 'student/my-interests.php', [
+            'error'         => null,
+            'registrations' => $registrations,
+            'email'         => $email,
+            'withdrawn'     => $flash['withdrawn'] ?? false,
+        ]);
+    }
+
+    public function myInterestsLookup(Request $req, Response $res): Response
+    {
+        $d     = $req->getParsedBody();
+        $email = strtolower(trim($d['email'] ?? ''));
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $this->renderer->render($res, 'student/my-interests.php', [
+                'error'         => 'Please enter a valid email address.',
+                'registrations' => null,
+                'email'         => $email,
+                'withdrawn'     => false,
+            ]);
+        }
+
+        $registrations = $this->model->findByEmail($email);
+
+        return $this->renderer->render($res, 'student/my-interests.php', [
+            'error'         => null,
+            'registrations' => $registrations,
+            'email'         => $email,
+            'withdrawn'     => false,
+        ]);
+    }
+
+    public function myInterestsWithdraw(Request $req, Response $res): Response
+    {
+        $d             = $req->getParsedBody();
+        $token         = trim($d['token'] ?? '');
+        $redirectEmail = trim($d['redirect_email'] ?? '');
+
+        // Fetch BEFORE deleting so we have name + programme for the email
+        $registration = $this->model->findOneByToken($token);
+
+        // Now delete
+        $this->model->withdraw($token);
+
+        // Send withdrawal confirmation email
+        if ($registration && filter_var($redirectEmail, FILTER_VALIDATE_EMAIL)) {
+            $programmeName = $registration['programme_title'] ?? 'the programme';
+            $firstName     = $registration['first_name']      ?? 'there';
+            $body  = "Hi {$firstName},\n\n";
+            $body .= "This is a confirmation that your interest in \"{$programmeName}\" has been successfully withdrawn.\n\n";
+            $body .= "You will no longer receive updates about this programme.\n\n";
+            $body .= "If you change your mind, you can re-register at any time:\n";
+            $body .= base_url('/') . "\n\n";
+            $body .= "Regards,\nThe UniHub Admissions Team";
+
+            try {
+                $this->sendEmail([$redirectEmail], 'Interest withdrawn - ' . $programmeName, $body);
+            } catch (\Throwable $e) {
+                error_log('Withdrawal email failed: ' . $e->getMessage());
+            }
+        }
+
+        $_SESSION['login_flash']['withdrawn'] = true;
+
+        $location = $redirectEmail
+            ? base_url('/my-interests?email=' . urlencode($redirectEmail))
+            : base_url('/my-interests');
+
+        return $res->withHeader('Location', $location)->withStatus(302);
     }
 }
