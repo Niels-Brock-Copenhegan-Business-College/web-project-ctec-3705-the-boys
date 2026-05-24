@@ -120,6 +120,8 @@ $app->post('/forgot',        [$authCtrl, 'forgotSubmit']);
 $app->get('/admin/login',    [$authCtrl, 'loginForm']);
 $app->post('/admin/login',   [$authCtrl, 'login']);
 $app->get('/admin/logout', [$authCtrl, 'logout']);
+$app->get('/admin/profile', [$authCtrl, 'adminProfileForm']);
+$app->post('/admin/profile', [$authCtrl, 'adminProfileUpdate']);
 $app->get('/staff/login',  [$authCtrl, 'staffLoginForm']);
 $app->post('/staff/login', [$authCtrl, 'staffLogin']);
 $app->get('/staff/logout', [$authCtrl, 'staffLogout']);

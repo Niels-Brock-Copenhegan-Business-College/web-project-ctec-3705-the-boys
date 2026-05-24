@@ -46,6 +46,37 @@ class ProgrammeController
         }
         $modulesByYear = $this->model->getModules((int)$args['id']);
         $staff         = $this->staffModel->getByProgramme((int)$args['id']);
+
+        // Enrich modules with assigned staff and pick a module leader (prefer 'coordinator')
+        foreach ($modulesByYear as $year => $modules) {
+            foreach ($modules as $idx => $m) {
+                $assigned = $this->moduleModel->getAssignedStaff((int)($m['id'] ?? 0));
+                $modulesByYear[$year][$idx]['assigned_staff'] = $assigned;
+
+                $leader = '';
+                foreach ($assigned as $as) {
+                    $role = $as['role'] ?? $as['staff_role'] ?? '';
+                    if ($role === 'coordinator') {
+                        $leader = $as['full_name'] ?? '';
+                        break;
+                    }
+                }
+                if (empty($leader) && !empty($assigned)) {
+                    $leader = $assigned[0]['full_name'] ?? '';
+                }
+                $modulesByYear[$year][$idx]['module_leader'] = $leader;
+            }
+        }
+
+        // Determine programme leader from programme staff (prefer role 'coordinator')
+        $progLeader = '';
+        foreach ($staff as $s) {
+            $role = $s['role'] ?? $s['staff_role'] ?? '';
+            if ($role === 'coordinator') { $progLeader = $s['full_name'] ?? ''; break; }
+        }
+        if (empty($progLeader) && !empty($staff)) { $progLeader = $staff[0]['full_name'] ?? ''; }
+        // attach to programme data for easy rendering
+        $prog['programme_leader'] = $progLeader;
         return $this->renderer->render($res, 'student/programme-detail.php', [
             'prog'          => $prog,
             'modulesByYear' => $modulesByYear,

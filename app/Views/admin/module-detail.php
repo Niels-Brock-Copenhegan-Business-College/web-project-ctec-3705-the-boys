@@ -9,6 +9,9 @@ include __DIR__ . '/header.php';
 ?>
 
 <?php if ($module): ?>
+    <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
+        <a href="<?= base_url('/admin/modules') ?>" class="btn btn-outline-secondary">Back to Modules</a>
+    </div>
     <div class="prog-hero">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
@@ -55,13 +58,7 @@ include __DIR__ . '/header.php';
 <?php if (!$module): ?>
     <div class="alert alert-warning">Module not found.</div>
 <?php else: ?>
-    <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
-        <a href="<?= base_url('/admin/modules/' . $module['id'] . '/edit') ?>" class="btn btn-warning">Edit Module</a>
-        <form method="POST" action="<?= base_url('/admin/modules/' . $module['id'] . '/delete') ?>" class="d-inline" onsubmit="return confirm('Delete this module?');">
-            <button type="submit" class="btn btn-outline-danger">Delete Module</button>
-        </form>
-        <a href="<?= base_url('/admin/modules') ?>" class="btn btn-outline-secondary">Back to Modules</a>
-    </div>
+    
 
     <div class="row g-4">
         <div class="col-lg-4">
