@@ -1,8 +1,17 @@
 <?php
 // Variables from StaffController::dashboard()
-$staff      = $staff      ?? [];
-$modules    = $modules    ?? [];
-$programmes = $programmes ?? [];
+$staff           = $staff           ?? [];
+$modules         = $modules         ?? [];
+$programmes      = $programmes      ?? [];
+$totalInterest   = $totalInterest   ?? 0;
+$recentInterests = $recentInterests ?? [];
+$draftProgrammes = $draftProgrammes ?? [];
+$flash           = $flash           ?? [];
+
+// Profile completeness
+$hasPhoto = !empty($staff['photo']);
+$hasBio   = !empty($staff['bio']);
+$profileComplete = $hasPhoto && $hasBio;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -35,9 +44,6 @@ $programmes = $programmes ?? [];
                 </span>
             </p>
         </div>
-        <a href="<?= base_url('/staff/programmes') ?>" class="btn btn-outline-primary btn-sm">
-            View all programmes &rarr;
-        </a>
     </div>
 
     <!-- Stat cards -->
@@ -54,7 +60,57 @@ $programmes = $programmes ?? [];
                 <div class="staff-stat-label">Programmes linked</div>
             </div>
         </div>
+        <div class="col-6 col-md-3">
+            <div class="staff-stat-card">
+                <div class="staff-stat-number"><?= $totalInterest ?></div>
+                <div class="staff-stat-label">Students interested</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="staff-stat-card <?= count($draftProgrammes) > 0 ? 'staff-stat-card--warn' : '' ?>">
+                <div class="staff-stat-number"><?= count($draftProgrammes) ?></div>
+                <div class="staff-stat-label">Unpublished programmes</div>
+            </div>
+        </div>
     </div>
+
+    <!-- Draft warning -->
+    <?php if (!empty($draftProgrammes)): ?>
+        <div class="alert alert-warning d-flex align-items-start gap-3 mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0 mt-1" aria-hidden="true"></i>
+            <div>
+                <strong>
+                    <?= count($draftProgrammes) === 1 ? '1 programme is' : count($draftProgrammes) . ' programmes are' ?>
+                    not visible to students.
+                </strong>
+                <div class="small mt-1">
+                    <?php foreach ($draftProgrammes as $dp): ?>
+                        <a href="<?= base_url('/staff/programmes/' . (int)$dp['id']) ?>" class="me-2">
+                            <?= htmlspecialchars($dp['title'], ENT_QUOTES) ?>
+                        </a>
+                    <?php endforeach; ?>
+                    — contact an admin to publish.
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Profile completeness nudge -->
+    <?php if (!$profileComplete): ?>
+        <div class="alert alert-info d-flex align-items-start gap-3 mb-4" role="note">
+            <i class="bi bi-person-circle fs-5 flex-shrink-0 mt-1" aria-hidden="true"></i>
+            <div>
+                <strong>Complete your profile</strong> — students see your info on programme pages.
+                <div class="small mt-1">
+                    <?php if (!$hasBio): ?><span class="me-2">⚠ No bio added.</span><?php endif; ?>
+                    <?php if (!$hasPhoto): ?><span>⚠ No profile photo.</span><?php endif; ?>
+                </div>
+                <a href="<?= base_url('/staff/profile/edit') ?>" class="btn btn-sm btn-outline-primary mt-2">
+                    <i class="bi bi-pencil me-1"></i>Edit profile
+                </a>
+            </div>
+        </div>
+    <?php endif; ?>
 
     <div class="row g-4">
 
@@ -82,7 +138,7 @@ $programmes = $programmes ?? [];
                         <div class="staff-year-group">
                             <div class="staff-year-label">Year <?= $year ?></div>
                             <?php foreach ($yearModules as $m): ?>
-                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>"
+                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>?from=dashboard"
                                    class="staff-module-row"
                                    aria-label="View details for <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">
                                     <div class="staff-module-row__body">
@@ -139,6 +195,55 @@ $programmes = $programmes ?? [];
                     <dd><?= date('j F Y', strtotime($staff['created_at'] ?? 'now')) ?></dd>
                 </dl>
             </div>
+
+            <!-- Recent interest registrations -->
+            <?php if (!empty($recentInterests)): ?>
+            <div class="staff-section-card mb-4">
+                <div class="staff-section-header">
+                    <h2 class="staff-section-title">
+                        <i class="bi bi-bell me-1 text-primary"></i>Recent interest
+                    </h2>
+                    <span class="badge bg-secondary rounded-pill"><?= count($recentInterests) ?></span>
+                </div>
+              <ul class="list-unstyled mb-0" style="padding:0 .25rem;">
+    <?php foreach ($recentInterests as $r): ?>
+        <li style="display:flex;align-items:center;gap:.75rem;
+                   padding:.7rem .5rem;
+                   border-bottom:1px solid #f1f5f9;min-width:0;">
+
+            <!-- Avatar -->
+            <div style="width:34px;height:34px;border-radius:50%;
+                        background:linear-gradient(135deg,#dbeafe,#bfdbfe);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:.75rem;font-weight:700;color:#1d4ed8;flex-shrink:0;">
+                <?= mb_strtoupper(mb_substr($r['first_name'], 0, 1)) ?>
+            </div>
+
+            <!-- Name + programme -->
+            <div style="flex:1;min-width:0;">
+                <div style="font-size:.84rem;font-weight:600;
+                            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    <?= htmlspecialchars($r['first_name'] . ' ' . $r['last_name'], ENT_QUOTES) ?>
+                </div>
+                <div style="font-size:.74rem;color:#64748b;
+                            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    <?= htmlspecialchars($r['programme_title'], ENT_QUOTES) ?>
+                </div>
+            </div>
+
+            <!-- Date — pulled in from right edge -->
+            <div style="font-size:.72rem;color:#94a3b8;flex-shrink:0;
+                        white-space:nowrap;padding-right:.25rem;">
+                <?= date('j M Y', strtotime($r['registered_at'])) ?>
+            </div>
+
+        </li>
+    <?php endforeach; ?>
+</ul>
+
+<a href="<?= base_url('/staff/interests') ?>" class="staff-view-all staff-view-all--center">See all</a>
+            </div>
+            <?php endif; ?>
 
             <!-- Programmes summary -->
             <div class="staff-section-card">

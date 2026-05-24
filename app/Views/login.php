@@ -126,10 +126,7 @@ $oldUser = $oldUser ?? '';
         }
         .sl-eye:hover { color:#475569; }
 
-        /* Row: forgot + remember */
-        .sl-meta { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.35rem; }
-        .sl-forgot { font-size:.78rem; color:#0052cc; text-decoration:none; font-weight:500; }
-        .sl-forgot:hover { text-decoration:underline; }
+
 
         /* Submit */
         .sl-btn {
@@ -145,27 +142,6 @@ $oldUser = $oldUser ?? '';
         .sl-btn:hover  { filter:brightness(1.07); transform:translateY(-1px); }
         .sl-btn:active { transform:translateY(0); filter:brightness(.96); }
 
-        /* Divider */
-        .sl-divider { display:flex; align-items:center; gap:.75rem; margin-bottom:1.1rem; }
-        .sl-divider span { font-size:.73rem; color:#94a3b8; white-space:nowrap; }
-        .sl-divider::before, .sl-divider::after {
-            content:''; flex:1; height:1px; background:#e7ecf2; }
-
-        /* Sign-up button */
-        .sl-signup {
-            width:100%; padding:.72rem 1.5rem;
-            background:#fff; color:#0d1b2a;
-            border:1.5px solid #dde3ec; border-radius:10px;
-            font-size:.92rem; font-weight:500; cursor:pointer;
-            display:flex; align-items:center; justify-content:center; gap:.5rem;
-            text-decoration:none;
-            transition: border-color .15s, background .15s, box-shadow .15s;
-        }
-        .sl-signup:hover {
-            border-color:#0052cc; color:#0052cc;
-            box-shadow: 0 2px 10px rgba(0,82,204,.08);
-            background:#f7f9ff;
-        }
 
         /* Error banner */
         .sl-error {
@@ -268,6 +244,7 @@ $oldUser = $oldUser ?? '';
 
         <div class="sl-card">
             <form method="POST" action="<?= base_url('/login') ?>" novalidate>
+                <?= csrf_field() ?>
 
                 <!-- Username -->
                 <div>
@@ -295,24 +272,10 @@ $oldUser = $oldUser ?? '';
                     </div>
                 </div>
 
-                <!-- Forgot link row -->
-                <div class="sl-meta">
-                    <span></span>
-                    <a href="<?= base_url('/forgot') ?>" class="sl-forgot">Forgot password?</a>
-                </div>
-
                 <!-- Submit -->
                 <button type="submit" class="sl-btn">
                     <i class="bi bi-box-arrow-in-right"></i> Sign in
                 </button>
-
-                <!-- Divider -->
-                <div class="sl-divider"><span>or</span></div>
-
-                <!-- Sign up / Register interest -->
-                <a href="<?= base_url('/') ?>" class="sl-signup">
-                    <i class="bi bi-person-plus"></i> Not registered yet? Get started
-                </a>
 
             </form>
         </div>

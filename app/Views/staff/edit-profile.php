@@ -152,6 +152,7 @@ $initials  = mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1));
 
     <div class="ep-card">
         <form method="POST" action="<?= base_url('/staff/profile/edit') ?>" enctype="multipart/form-data">
+            <?= csrf_field() ?>
 
             <!-- Read-only: admin-managed fields -->
             <div class="ep-section-head">Account details &nbsp;&middot;&nbsp; Managed by admin</div>
@@ -192,6 +193,18 @@ $initials  = mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1));
                 <?php if (isset($errors['full_name'])): ?>
                     <div class="invalid-feedback"><?= htmlspecialchars($errors['full_name'], ENT_QUOTES) ?></div>
                 <?php endif; ?>
+            </div>
+
+            <!-- Bio -->
+            <div class="mb-4">
+                <label for="bio" class="form-label fw-medium">Bio</label>
+                <textarea id="bio"
+                          name="bio"
+                          rows="4"
+                          class="form-control"
+                          maxlength="500"
+                          placeholder="A short paragraph about yourself — this is shown to students on programme pages…"><?= htmlspecialchars($staff['bio'] ?? '', ENT_QUOTES) ?></textarea>
+                <div class="form-text">Max 500 characters. Shown to prospective students on programme pages.</div>
             </div>
 
             <!-- Photo upload -->

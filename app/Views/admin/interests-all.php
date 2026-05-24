@@ -49,7 +49,7 @@ include __DIR__ . '/header.php';
   <section class="card bulk-mail-card mb-4">
     <div class="card-body p-4">
       <h2 class="h5 mb-3">Bulk Email by Programme</h2>
-      <form method="POST" action="<?= base_url('/admin/interests/send-programme') ?>">
+      <form method="POST" action="<?= base_url('/admin/interests/send-programme') ?>">  <?= csrf_field() ?>
         <div class="row g-3 align-items-end">
           <div class="col-lg-4">
             <label for="programmeTarget" class="form-label fw-semibold">Select target programme</label>
@@ -119,7 +119,7 @@ include __DIR__ . '/header.php';
                       data-subject="<?= $rowSubject ?>"
                       data-body="<?= $rowBody ?>"
                     >Compose</button>
-                    <form method="POST" action="<?= base_url('/admin/interests/' . $i['id'] . '/delete') ?>" class="delete-form">
+                    <form method="POST" action="<?= base_url('/admin/interests/' . $i['id'] . '/delete') ?>" class="delete-form">  <?= csrf_field() ?>
                       <button class="btn btn-sm btn-danger" aria-label="Remove <?= htmlspecialchars($i['email'], ENT_QUOTES) ?>">Remove</button>
                     </form>
                   </div>

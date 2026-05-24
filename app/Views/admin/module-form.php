@@ -6,6 +6,7 @@ $currentPhoto = $module['photo'] ?? '';
 $currentSrc = $currentPhoto ? base_url('/uploads/' . ltrim($currentPhoto, '/')) : '';
 include __DIR__ . '/header.php';
 ?>
+<<<<<<< HEAD
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -29,6 +30,27 @@ include __DIR__ . '/header.php';
               <span class="badge bg-light text-dark me-2">Module</span>
               <span class="badge bg-light text-dark"><?= $module ? 'Editing' : 'New' ?></span>
             </div>
+=======
+<h1 class="h3 mb-4"><?= $module ? 'Edit Module' : 'New Module' ?></h1>
+<div class="card shadow-sm" style="max-width:600px">
+  <div class="card-body">
+    <form method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+      <?= csrf_field() ?>
+      <div class="mb-3">
+        <label for="title" class="form-label">Module Title</label>
+        <input id="title" type="text" name="title" class="form-control" required
+               value="<?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?>">
+      </div>
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" name="description" class="form-control" rows="3" required><?= htmlspecialchars($module['description'] ?? '', ENT_QUOTES) ?></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="photo" class="form-label">Module Photo</label>
+        <?php if ($module && !empty($module['photo'])): ?>
+          <div class="mb-2">
+            <img src="<?= base_url('/uploads/modules/' . htmlspecialchars($module['photo'], ENT_QUOTES)) ?>" alt="<?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?>" style="max-height: 150px; border-radius: 8px;">
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
           </div>
 
           <div class="col-md-7 p-4 bg-white">

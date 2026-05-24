@@ -12,7 +12,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class StaffController
 {
     public function __construct(
-        private \PDO $pdo,
         private StaffModel $staffModel,
         private ModuleModel $moduleModel,
         private ProgrammeModel $programmeModel,
@@ -185,6 +184,7 @@ class StaffController
         return $res->withHeader('Location', base_url('/admin/staff'))->withStatus(302);
     }
 
+<<<<<<< HEAD
     /**
      * Verify admin secret code for destructive action
      */
@@ -220,6 +220,8 @@ class StaffController
         return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
     }
 
+=======
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
     // ── Staff portal ──────────────────────────────────────────────
 
     /**
@@ -231,10 +233,42 @@ class StaffController
         $modules    = $this->staffModel->getAssignedModules($staffId);
         $programmes = $this->staffModel->getAssignedProgrammes($staffId);
 
+        // ── Total interest count across all assigned programmes ──
+        $totalInterest = array_sum(array_column($programmes, 'interest_count'));
+
+        // ── Recent interests (last 7 days) per programme ─────────
+        $recentInterests = [];
+        foreach ($programmes as $p) {
+            $stmt = $this->staffModel->getPdo()->prepare(
+                'SELECT ir.first_name, ir.last_name, ir.registered_at, p.title AS programme_title
+                 FROM interest_registrations ir
+                 JOIN programmes p ON p.id = ir.programme_id
+                 WHERE ir.programme_id = ?
+                 AND ir.registered_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+                 ORDER BY ir.registered_at DESC LIMIT 5'
+            );
+            $stmt->execute([(int)$p['id']]);
+            foreach ($stmt->fetchAll() as $row) {
+                $recentInterests[] = $row;
+            }
+        }
+        usort($recentInterests, fn($a, $b) => strtotime($b['registered_at']) - strtotime($a['registered_at']));
+        $recentInterests = array_slice($recentInterests, 0, 5);
+
+        // ── Draft programmes warning ──────────────────────────────
+        $draftProgrammes = array_filter($programmes, fn($p) => !(int)$p['is_published']);
+
+        // ── Module coverage per programme ─────────────────────────
+        // my_module_count already in getAssignedProgrammes query
+
         return $this->renderer->render($res, 'staff/dashboard.php', [
-            'staff'      => $this->staffModel->findById($staffId),
-            'modules'    => $modules,
-            'programmes' => $programmes,
+            'staff'           => $this->staffModel->findById($staffId),
+            'modules'         => $modules,
+            'programmes'      => $programmes,
+            'totalInterest'   => $totalInterest,
+            'recentInterests' => $recentInterests,
+            'draftProgrammes' => array_values($draftProgrammes),
+            'flash'           => $this->getFlash(),
         ]);
     }
 
@@ -385,6 +419,7 @@ class StaffController
         $staff    = $this->staffModel->findById($staffId);
         $d        = $req->getParsedBody();
         $fullName = $this->clean($d['full_name'] ?? '');
+        $bio      = trim($d['bio'] ?? '');
         $errors   = [];
 
         if (!$fullName) $errors['full_name'] = 'Full name is required.';
@@ -424,10 +459,58 @@ class StaffController
             ]);
         }
 
-        $this->staffModel->update($staffId, ['full_name' => $fullName, 'photo' => $newPhoto]);
+        $this->staffModel->update($staffId, ['full_name' => $fullName, 'photo' => $newPhoto, 'bio' => $bio]);
         $_SESSION['staff_name'] = $fullName;
 
         $this->flash('success', 'Profile updated successfully.');
         return $res->withHeader('Location', base_url('/staff/profile/edit'))->withStatus(302);
     }
+
+    /**
+     * All interests — shows every registration across all programmes
+     * assigned to the logged-in staff member.
+     * Security: JOIN on staff_programmes means staff can never see
+     * registrations outside their own assigned programmes.
+     */
+    public function interests(Request $req, Response $res): Response
+    {
+        $staffId = (int) $_SESSION['staff_id'];
+
+        // Fetch all registrations filtered to this staff's programmes only.
+        // The JOIN on staff_programmes is the security boundary.
+        $stmt = $this->staffModel->getPdo()->prepare("
+            SELECT
+                ir.id,
+                ir.first_name,
+                ir.last_name,
+                ir.email,
+                ir.registered_at,
+                p.id    AS programme_id,
+                p.title AS programme_title,
+                p.level AS programme_level
+            FROM interest_registrations ir
+            JOIN programmes p
+                ON ir.programme_id = p.id
+            JOIN staff_programmes sp
+                ON sp.programme_id = ir.programme_id
+               AND sp.staff_id = ?
+            ORDER BY p.title ASC, ir.registered_at DESC
+        ");
+        $stmt->execute([$staffId]);
+        $registrations = $stmt->fetchAll();
+
+        // Group by programme name for the view
+        $grouped = [];
+        foreach ($registrations as $r) {
+            $grouped[$r['programme_title']][] = $r;
+        }
+
+        return $this->renderer->render($res, 'staff/interests.php', [
+            'staff'         => $this->staffModel->findById($staffId),
+            'registrations' => $registrations,
+            'grouped'       => $grouped,
+            'flash'         => $this->getFlash(),
+        ]);
+    }
+
 }

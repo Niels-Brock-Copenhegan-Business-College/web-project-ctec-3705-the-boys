@@ -133,24 +133,38 @@ include __DIR__ . '/../layout/header.php';
 <section class="py-5 bg-light" aria-labelledby="staff-heading">
   <div class="container">
     <h2 id="staff-heading" class="h4 fw-semibold mb-4">Programme team</h2>
-    <div class="row g-3">
+    <div class="row g-4">
       <?php foreach ($staff as $s): ?>
         <div class="col-sm-6 col-lg-4">
-          <div class="d-flex align-items-center gap-3 p-3 bg-white rounded-3 border h-100">
-            <div class="staff-profile-avatar flex-shrink-0"
-                 style="width:2.8rem;height:2.8rem;border-radius:50%;background:linear-gradient(135deg,#003366,#00509e);
-                        color:#fff;font-size:1rem;font-weight:700;display:flex;align-items:center;justify-content:center;"
-                 aria-hidden="true">
-              <?= mb_strtoupper(mb_substr($s['full_name'], 0, 1)) ?>
-            </div>
-            <div class="min-width-0">
-              <div class="fw-semibold text-dark" style="font-size:.9rem;">
-                <?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>
-              </div>
-              <span class="badge" style="background:#dbeafe;color:#1d4ed8;font-size:.7rem;font-weight:600;">
+          <div class="d-flex flex-column p-4 bg-white rounded-3 border h-100" style="gap:.75rem;">
+            <!-- Photo + name row -->
+            <div class="d-flex align-items-center gap-3">
+              <?php if (!empty($s['photo'])): ?>
+                <img src="<?= base_url('/uploads/staff/' . htmlspecialchars($s['photo'], ENT_QUOTES)) ?>"
+                     alt="<?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>"
+                     style="width:3.2rem;height:3.2rem;border-radius:50%;object-fit:cover;border:2px solid #e2e8f0;flex-shrink:0;">
+              <?php else: ?>
+                <div style="width:3.2rem;height:3.2rem;border-radius:50%;background:linear-gradient(135deg,#003366,#00509e);
+                            color:#fff;font-size:1.1rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;"
+                     aria-hidden="true">
+                  <?= mb_strtoupper(mb_substr($s['full_name'], 0, 1)) ?>
+                </div>
+              <?php endif; ?>
+              <div>
+                <div class="fw-semibold text-dark" style="font-size:.92rem;">
+                  <?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>
+                </div>
+                <span class="badge mt-1" style="background:#dbeafe;color:#1d4ed8;font-size:.7rem;font-weight:600;">
                   <?= ucfirst(htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES)) ?>
-              </span>
+                </span>
+              </div>
             </div>
+            <!-- Bio -->
+            <?php if (!empty($s['bio'])): ?>
+              <p class="text-muted mb-0" style="font-size:.82rem;line-height:1.6;">
+                <?= htmlspecialchars($s['bio'], ENT_QUOTES) ?>
+              </p>
+            <?php endif; ?>
           </div>
         </div>
       <?php endforeach; ?>

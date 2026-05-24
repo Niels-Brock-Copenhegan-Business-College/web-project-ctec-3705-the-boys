@@ -93,13 +93,14 @@ include __DIR__ . '/../header.php';
       </button>
       <ul class="dropdown-menu dropdown-menu-end shadow-sm">
         <li>
-          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/send-password-reset') ?>" class="m-0">
+          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/send-password-reset') ?>" class="m-0"> <?= csrf_field() ?>
             <button type="submit" class="dropdown-item" onclick="return confirm('Send a password reset link to this staff member?')">Send password reset</button>
           </form>
         </li>
         <li><hr class="dropdown-divider"></li>
         <li>
           <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Delete this staff member?');">
+             <?= csrf_field() ?>
             <button type="submit" class="dropdown-item text-danger">Delete staff</button>
           </form>
         </li>
@@ -140,6 +141,7 @@ include __DIR__ . '/../header.php';
                     <strong><?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?></strong>
                   </div>
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/unassign-module') ?>" class="m-0">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="module_id" value="<?= (int) $module['id'] ?>">
                     <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Unassign this module?')">Remove</button>
                   </form>
@@ -164,6 +166,7 @@ include __DIR__ . '/../header.php';
                     <div class="text-muted small"><?= htmlspecialchars($programme['level'] ?? '', ENT_QUOTES) ?></div>
                   </div>
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/unassign-programme') ?>" class="m-0">
+                    <?= csrf_field() ?>
                     <input type="hidden" name="programme_id" value="<?= (int) $programme['id'] ?>">
                     <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Unassign this programme?')">Remove</button>
                   </form>
@@ -189,6 +192,7 @@ include __DIR__ . '/../header.php';
               <div id="collapseModule" class="accordion-collapse collapse show" aria-labelledby="headingModule" data-bs-parent="#assignAccordion">
                 <div class="accordion-body pt-4">
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/assign-module') ?>">
+                     <?= csrf_field() ?>
                     <?php if (empty($unassignedModules)): ?>
                       <div class="alert alert-info mb-0">No modules are available to assign.</div>
                     <?php else: ?>
@@ -245,6 +249,7 @@ include __DIR__ . '/../header.php';
               <div id="collapseProgramme" class="accordion-collapse collapse" aria-labelledby="headingProgramme" data-bs-parent="#assignAccordion">
                 <div class="accordion-body pt-4">
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/assign-programme') ?>">
+                     <?= csrf_field() ?>
                     <?php if (empty($unassignedProgrammes)): ?>
                       <div class="alert alert-info mb-0">No programmes are available to assign.</div>
                     <?php else: ?>

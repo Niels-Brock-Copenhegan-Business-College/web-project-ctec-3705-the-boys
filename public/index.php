@@ -16,7 +16,12 @@ use App\Models\InterestModel;
 use App\Models\StaffModel;
 
 require __DIR__ . '/../vendor/autoload.php';
+<<<<<<< HEAD
 require __DIR__ . '/../app/Helpers/logging.php';
+=======
+require __DIR__ . '/../app/Helpers/csrf.php';
+
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
 
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
@@ -65,9 +70,10 @@ $interestCtrl = new InterestController($interestModel, $progModel, $renderer, $m
 $authCtrl     = new AuthController($pdo, $renderer, $mailConfig);
 $superAdminCtrl = new SuperAdminController($pdo, $renderer, $mailConfig);
 $moduleCtrl   = new ModuleController($pdo, $moduleModel, $progModel, $renderer);
-$staffCtrl    = new StaffController($pdo, $staffModel, $moduleModel, $progModel, $renderer, $interestModel);
+$staffCtrl = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
+$app->add(new App\Middleware\CsrfMiddleware());
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 if ($scriptName !== '/' && $scriptName !== '.') {
     $app->setBasePath($scriptName);
@@ -111,12 +117,39 @@ $app->get('/programmes/{id:[0-9]+}', [$progCtrl, 'detail']);
 $app->get('/interest/register/{id:[0-9]+}', [$interestCtrl, 'showForm']);
 $app->post('/interest', [$interestCtrl, 'register']);
 $app->get('/interest/withdraw/{token}', [$interestCtrl, 'withdraw']);
+$app->get('/my-interests',            [$interestCtrl, 'myInterestsForm']);
+$app->post('/my-interests',           [$interestCtrl, 'myInterestsLookup']);
+$app->post('/my-interests/withdraw',  [$interestCtrl, 'myInterestsWithdraw']);
+
+// ── Static info pages ───────────────────────────────────────
+$app->get('/how-to-apply',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/how-to-apply.php', []);
+});
+$app->get('/fees-and-funding', function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/fees-and-funding.php', []);
+});
+$app->get('/scholarships',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/scholarships.php', []);
+});
+$app->get('/campus-life',      function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/campus-life.php', []);
+});
+$app->get('/privacy-policy',   function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/privacy-policy.php', []);
+});
+$app->get('/cookie-policy',    function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/cookie-policy.php', []);
+});
+$app->get('/accessibility',    function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/accessibility.php', []);
+});
+$app->get('/terms-of-use',     function ($req, $res) use ($renderer) {
+    return $renderer->render($res, 'student/terms-of-use.php', []);
+});
 
 // ── Auth routes ─────────────────────────────────────────────────
 $app->get('/login',          [$authCtrl, 'unifiedLoginForm']);
 $app->post('/login',         [$authCtrl, 'unifiedLogin']);
-$app->get('/forgot',         [$authCtrl, 'forgotForm']);
-$app->post('/forgot',        [$authCtrl, 'forgotSubmit']);
 $app->get('/admin/login',    [$authCtrl, 'loginForm']);
 $app->post('/admin/login',   [$authCtrl, 'login']);
 $app->get('/admin/logout', [$authCtrl, 'logout']);
@@ -200,6 +233,7 @@ $app->group('/staff', function ($group) use ($staffCtrl) {
     $group->get('/programmes',             [$staffCtrl, 'programmes']);
     $group->get('/programmes/{id:[0-9]+}', [$staffCtrl, 'programmeDetail']);
     $group->get('/programmes/{id:[0-9]+}/interests', [$staffCtrl, 'programmeInterests']);
+    $group->get('/interests',                        [$staffCtrl, 'interests']); // all registrations across assigned programmes
     $group->get('/profile/edit',           [$staffCtrl, 'editProfile']);
     $group->post('/profile/edit',          [$staffCtrl, 'updateProfile']);
 })->add($staffAuth);

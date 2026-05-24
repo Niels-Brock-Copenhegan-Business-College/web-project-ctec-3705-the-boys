@@ -13,12 +13,6 @@
             <span class="uni-footer__name">UniHub</span>
           </a>
           <p class="uni-footer__desc">Shaping the next generation of thinkers, innovators, and leaders through world-class education.</p>
-          <div class="uni-footer__social">
-            <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
-            <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
-            <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
-            <a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
-          </div>
         </div>
 
         <!-- Study -->
@@ -27,10 +21,9 @@
           <ul>
             <li><a href="<?= base_url('/?level=Undergraduate') ?>">Undergraduate programmes</a></li>
             <li><a href="<?= base_url('/?level=Postgraduate') ?>">Postgraduate programmes</a></li>
-            <li><a href="#open-days">Open days</a></li>
-            <li><a href="<?= base_url('/') ?>">How to apply</a></li>
-            <li><a href="<?= base_url('/') ?>">Fees &amp; funding</a></li>
-            <li><a href="<?= base_url('/') ?>">Scholarships</a></li>
+            <li><a href="<?= base_url('/how-to-apply') ?>">How to apply</a></li>
+            <li><a href="<?= base_url('/fees-and-funding') ?>">Fees &amp; funding</a></li>
+            <li><a href="<?= base_url('/scholarships') ?>">Scholarships</a></li>
           </ul>
         </div>
 
@@ -38,12 +31,8 @@
         <div class="uni-footer__col">
           <div class="uni-footer__col-head">The university</div>
           <ul>
-            <li><a href="#why-unihub">About UniHub</a></li>
-            <li><a href="#">Faculties &amp; schools</a></li>
-            <li><a href="#">Research</a></li>
-            <li><a href="#">Campus life</a></li>
-            <li><a href="#">News &amp; events</a></li>
-            <li><a href="#">Careers</a></li>
+            <li><a href="<?= base_url('/campus-life') ?>">Campus life</a></li>
+            <li><a href="<?= base_url('/accessibility') ?>">Accessibility</a></li>
           </ul>
         </div>
 
@@ -66,10 +55,10 @@
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
       <span>&copy; <?= date('Y') ?> UniHub University. All rights reserved.</span>
       <div class="uni-footer__legal">
-        <a href="#">Privacy policy</a>
-        <a href="#">Cookie policy</a>
-        <a href="#">Accessibility</a>
-        <a href="#">Terms of use</a>
+        <a href="<?= base_url('/privacy-policy') ?>">Privacy policy</a>
+        <a href="<?= base_url('/cookie-policy') ?>">Cookie policy</a>
+        <a href="<?= base_url('/accessibility') ?>">Accessibility</a>
+        <a href="<?= base_url('/terms-of-use') ?>">Terms of use</a>
       </div>
     </div>
   </div>

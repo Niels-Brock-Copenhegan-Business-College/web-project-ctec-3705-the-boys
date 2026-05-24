@@ -18,13 +18,10 @@ class AuthController
         private array $mailConfig = []
     ) {}
 
-    private function flash(string $key, string $msg): void
-    {
-        $_SESSION['login_flash'][$key] = $msg;
-    }
-
+    private function flash(string $key, string $msg): void { $_SESSION['login_flash'][$key] = $msg; }
+ 
     // ─── UNIFIED LOGIN FORM ──────────────────────────────────────
-
+ 
     public function unifiedLoginForm(Request $req, Response $res): Response
     {
         if (!empty($_SESSION['admin_id'])) {
@@ -33,25 +30,25 @@ class AuthController
         if (!empty($_SESSION['staff_id'])) {
             return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
         }
-
+ 
         $flash = $_SESSION['login_flash'] ?? [];
         unset($_SESSION['login_flash']);
-
+ 
         return $this->renderer->render($res, 'login.php', [
             'error'   => null,
             'flash'   => $flash,
             'oldUser' => '',
         ]);
     }
-
+ 
     // ─── UNIFIED LOGIN POST ──────────────────────────────────────
-    // No role selector — try admin first, then staff. Whoever matches gets in.
-
+ 
     public function unifiedLogin(Request $req, Response $res): Response
     {
         $d    = $req->getParsedBody();
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
+<<<<<<< HEAD
         $path = (string) $req->getUri()->getPath();
 
         // 1. Try admin
@@ -65,19 +62,127 @@ class AuthController
             $_SESSION['admin_username'] = $admin['username'] ?? $user;
             $_SESSION['admin_avatar'] = $admin['avatar'] ?? null;
             return $res->withHeader('Location', base_url('/admin'))->withStatus(302);
+=======
+ 
+        // ── 1. Try admin — with brute force protection ───────────
+        $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
+        $stmt->execute([$user]);
+        $admin = $stmt->fetch();
+ 
+        if ($admin) {
+            // Check lockout
+            if (!empty($admin['locked_until'])) {
+                $lockedUntil = new \DateTime($admin['locked_until']);
+                $now         = new \DateTime();
+                if ($now < $lockedUntil) {
+                    $diff      = $now->diff($lockedUntil);
+                    $remaining = ($diff->h * 60) + $diff->i + ($diff->s > 0 ? 1 : 0);
+                    return $this->renderer->render($res, 'login.php', [
+                        'error'   => "Too many failed attempts. Please try again in {$remaining} minute(s).",
+                        'flash'   => [],
+                        'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                    ]);
+                } else {
+                    // Lock expired — reset
+                    $this->pdo->prepare(
+                        'UPDATE admins SET login_attempts = 0, locked_until = NULL WHERE id = ?'
+                    )->execute([$admin['id']]);
+                    $admin['login_attempts'] = 0;
+                    $admin['locked_until']   = null;
+                }
+            }
+ 
+            if (password_verify($pass, $admin['password_hash'])) {
+                // Success — reset counter and log in
+                $this->pdo->prepare(
+                    'UPDATE admins SET login_attempts = 0, locked_until = NULL WHERE id = ?'
+                )->execute([$admin['id']]);
+                session_regenerate_id(true);
+                $_SESSION['admin_id'] = $admin['id'];
+                return $res->withHeader('Location', base_url('/admin'))->withStatus(302);
+            }
+ 
+            // Wrong password — increment counter
+            $attempts = (int)$admin['login_attempts'] + 1;
+            if ($attempts >= 5) {
+                $this->pdo->prepare(
+                    'UPDATE admins SET login_attempts = login_attempts + 1,
+                     locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?'
+                )->execute([$admin['id']]);
+                return $this->renderer->render($res, 'login.php', [
+                    'error'   => 'Too many failed attempts. Your account has been locked for 15 minutes.',
+                    'flash'   => [],
+                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                ]);
+            } else {
+                $this->pdo->prepare(
+                    'UPDATE admins SET login_attempts = login_attempts + 1 WHERE id = ?'
+                )->execute([$admin['id']]);
+                $left = 5 - $attempts;
+                return $this->renderer->render($res, 'login.php', [
+                    'error'   => "Incorrect username or password. {$left} attempt(s) remaining before lockout.",
+                    'flash'   => [],
+                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                ]);
+            }
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         }
-
-        // 2. Try staff
+ 
+        // ── 2. Try staff — with brute force protection ───────────
         $staffModel = new StaffModel($this->pdo);
-        $staff      = $staffModel->verifyLogin($user, $pass);
-
-        if ($staff) {
-            session_regenerate_id(true);
-            $_SESSION['staff_id']   = $staff['id'];
-            $_SESSION['staff_name'] = $staff['full_name'];
-            $_SESSION['staff_role'] = $staff['role'];
-            return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
+        $staffRow   = $staffModel->findByUsername($user);
+ 
+        if ($staffRow) {
+            // Check lockout
+            if (!empty($staffRow['locked_until'])) {
+                $lockedUntil = new \DateTime($staffRow['locked_until']);
+                $now         = new \DateTime();
+                if ($now < $lockedUntil) {
+                    $diff      = $now->diff($lockedUntil);
+                    $remaining = ($diff->h * 60) + $diff->i + ($diff->s > 0 ? 1 : 0);
+                    return $this->renderer->render($res, 'login.php', [
+                        'error'   => "Too many failed attempts. Please try again in {$remaining} minute(s).",
+                        'flash'   => [],
+                        'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                    ]);
+                } else {
+                    // Lock expired — reset
+                    $staffModel->resetLoginAttempts((int)$staffRow['id']);
+                    $staffRow['login_attempts'] = 0;
+                    $staffRow['locked_until']   = null;
+                }
+            }
+ 
+            if (password_verify($pass, $staffRow['password_hash'])) {
+                // Success — reset counter and log in
+                $staffModel->resetLoginAttempts((int)$staffRow['id']);
+                session_regenerate_id(true);
+                $_SESSION['staff_id']   = $staffRow['id'];
+                $_SESSION['staff_name'] = $staffRow['full_name'];
+                $_SESSION['staff_role'] = $staffRow['role'];
+                return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
+            }
+ 
+            // Wrong password — increment counter
+            $attempts = (int)$staffRow['login_attempts'] + 1;
+            if ($attempts >= 5) {
+                $staffModel->lockAccount((int)$staffRow['id'], 15);
+                return $this->renderer->render($res, 'login.php', [
+                    'error'   => 'Too many failed attempts. Your account has been locked for 15 minutes.',
+                    'flash'   => [],
+                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                ]);
+            } else {
+                $staffModel->incrementLoginAttempts((int)$staffRow['id']);
+                $left = 5 - $attempts;
+                return $this->renderer->render($res, 'login.php', [
+                    'error'   => "Incorrect username or password. {$left} attempt(s) remaining before lockout.",
+                    'flash'   => [],
+                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                ]);
+            }
         }
+<<<<<<< HEAD
 
         // unifiedLogin() is only used for the login POST endpoints
         // so always log failed attempts here (admins + staff).
@@ -89,13 +194,16 @@ class AuthController
             'path' => $path,
         ]);
 
+=======
+ 
+        // ── 3. No match at all ───────────────────────────────────
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         return $this->renderer->render($res, 'login.php', [
             'error'   => 'Incorrect username or password.',
             'flash'   => [],
             'oldUser' => htmlspecialchars($user, ENT_QUOTES),
         ]);
     }
-
     // ─── FORGOT PASSWORD (student email lookup) ──────────────────
 
     public function forgotForm(Request $req, Response $res): Response

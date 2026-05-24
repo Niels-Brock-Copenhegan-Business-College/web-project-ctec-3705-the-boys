@@ -163,14 +163,13 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                             <div class="staff-year-label">Year <?= (int)$year ?></div>
                             <?php foreach ($mods as $m): ?>
                                 <?php
-                                // Thumbnail for this module (if it has a photo)
                                 $thumbUrl = '';
                                 if (!empty($m['photo'])) {
                                     $thumbUrl = base_url('/uploads/' . htmlspecialchars($m['photo'], ENT_QUOTES));
                                 }
                                 $initial = mb_strtoupper(mb_substr($m['title'], 0, 1));
                                 ?>
-                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>"
+                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>?from=programme&pid=<?= (int)$programme['id'] ?>"
                                    class="staff-module-row"
                                    aria-label="View <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">
                                     <!-- Thumbnail -->
@@ -186,6 +185,11 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                                         <div class="staff-module-row__title">
                                             <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>
                                         </div>
+                                        <?php if (!empty($m['leader_name'])): ?>
+                                            <div class="staff-module-row__sub text-muted" style="font-size:.78rem;">
+                                                <i class="bi bi-person me-1"></i><?= htmlspecialchars($m['leader_name'], ENT_QUOTES) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="staff-module-row__meta">
                                         <span class="staff-arrow" aria-hidden="true">&rarr;</span>

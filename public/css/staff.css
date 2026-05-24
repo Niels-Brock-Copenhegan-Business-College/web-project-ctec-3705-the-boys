@@ -163,6 +163,17 @@
     text-decoration: underline;
 }
 
+/* Centered "See all" footer link inside a card */
+.staff-view-all--center {
+    display: block;
+    text-align: center;
+    padding: .65rem 0 .25rem;
+    border-top: 1px solid #f1f5f9;
+    margin-top: .25rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
 .staff-empty-state {
     padding: 2rem 1.25rem;
     text-align: center;
@@ -394,8 +405,9 @@
     display: flex;
     align-items: center;
     gap: .85rem;
-    padding: .75rem 1.25rem;
+    padding: .8rem 1.1rem;        /* pulled in from 1.25rem — stops edge-touching */
     border-bottom: 1px solid #f0f2f5;
+    min-width: 0;                  /* lets flex children shrink + truncate */
 }
 
 .staff-person-row:last-child { border-bottom: none; }
@@ -415,8 +427,22 @@
     overflow: hidden;
 }
 
-.staff-person-name  { font-size: .88rem; font-weight: 600; color: #111827; }
-.staff-person-email { font-size: .78rem; color: #6b7280; }
+.staff-person-name {
+    font-size: .88rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.staff-person-email {
+    font-size: .78rem;
+    color: #6b7280;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
 /* ── Programmes detail list ─────────────────────────────────── */
 
@@ -424,18 +450,22 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: .85rem 1.25rem;
+    gap: .75rem;
+    padding: .8rem 1.1rem;        /* pulled in — stops edge-touching */
     border-bottom: 1px solid #f0f2f5;
+    min-width: 0;
 }
 
 .staff-prog-item:last-child { border-bottom: none; }
 
 .staff-prog-item__title {
-    font-size: .9rem;
+    font-size: .88rem;
     font-weight: 600;
     color: #111827;
     margin-bottom: .25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ── Programme card (partials/programme-card.php) ───────────── */
@@ -595,4 +625,432 @@
 .staff-prog-card__stat--highlight .staff-prog-card__stat-l {
     color: #1d4ed8;
     font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTERESTS PAGE  (.si- namespace = "staff interests")
+   All registrations across the staff member's assigned programmes.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Summary strip ──────────────────────────────────────────── */
+.si-summary {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+}
+
+.si-summary__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    text-align: center;
+}
+
+.si-summary__n {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #003366;
+    line-height: 1;
+}
+
+.si-summary__l {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #94a3b8;
+    margin-top: .2rem;
+}
+
+.si-summary__divider {
+    width: 1px;
+    height: 36px;
+    background: #e6eaf0;
+    flex-shrink: 0;
+}
+
+/* ── Search bar ─────────────────────────────────────────────── */
+.si-search-wrap {
+    position: relative;
+}
+
+.si-search-icon {
+    position: absolute;
+    left: .9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.si-search {
+    padding-left: 2.4rem;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    font-size: .9rem;
+    height: 2.6rem;
+}
+
+.si-search:focus {
+    border-color: #003366;
+    box-shadow: 0 0 0 3px rgba(0, 51, 102, .1);
+    outline: none;
+}
+
+/* ── Programme group card ───────────────────────────────────── */
+.si-group {
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.si-group__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .85rem 1.25rem;
+    background: #f7f9fc;
+    border-bottom: 1px solid #e6eaf0;
+    flex-wrap: wrap;
+}
+
+.si-group__title {
+    font-size: .92rem;
+    font-weight: 700;
+    color: #0a1f3d;
+}
+
+.si-group__count {
+    font-size: .8rem;
+    color: #64748b;
+}
+
+.si-group__count-n {
+    font-weight: 700;
+    color: #0a1f3d;
+}
+
+/* Small icon button to jump to full-page programme interests view */
+.si-view-btn {
+    color: #64748b;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: color .15s;
+    line-height: 1;
+}
+
+.si-view-btn:hover {
+    color: #003366;
+}
+
+/* ── Level badge ────────────────────────────────────────────── */
+.si-level-badge {
+    display: inline-block;
+    padding: .18rem .6rem;
+    border-radius: 99px;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.si-level-badge--ug {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.si-level-badge--pg {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* ── Student row ────────────────────────────────────────────── */
+.si-group__body {
+    /* no extra padding — rows fill edge-to-edge */
+}
+
+.si-student {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .85rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .1s;
+    min-width: 0;
+}
+
+.si-student:last-child {
+    border-bottom: none;
+}
+
+.si-student:hover {
+    background: #f8fafc;
+}
+
+/* Avatar circle with navy gradient */
+.si-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #003366, #00509e);
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Name + email block — flex:1 + min-width:0 ensures ellipsis works */
+.si-student__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.si-student__name {
+    font-size: .88rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.si-student__email {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .76rem;
+    color: #6b7280;
+    text-decoration: none;
+    transition: color .12s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.si-student__email:hover {
+    color: #003366;
+}
+
+/* Date block — pushed to the right, never wraps */
+.si-student__date {
+    flex-shrink: 0;
+    text-align: right;
+    font-size: .76rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    padding-left: .5rem;
+}
+
+.si-student__time {
+    font-size: .7rem;
+    color: #c0c8d4;
+    margin-top: .1rem;
+}
+
+/* ── Responsive tweaks ──────────────────────────────────────── */
+@media (max-width: 576px) {
+    /* On very small screens hide the time, keep the date */
+    .si-student__time { display: none; }
+
+    /* Stack summary stats */
+    .si-summary { gap: 1rem; padding: .85rem 1rem; }
+    .si-summary__n { font-size: 1.4rem; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MODULE DETAIL PAGE  (.md- namespace = "module detail")
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Quick facts strip ──────────────────────────────────────── */
+.md-facts-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: #fff;
+    border: 1px solid #e6eaf0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.md-facts-strip__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.1rem 1rem;
+    text-align: center;
+}
+
+.md-facts-strip__n {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: #003366;
+    line-height: 1;
+}
+
+.md-facts-strip__l {
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #94a3b8;
+    margin-top: .25rem;
+}
+
+.md-facts-strip__div {
+    width: 1px;
+    height: 40px;
+    background: #e6eaf0;
+    flex-shrink: 0;
+}
+
+/* ── Staff grid — 1 col mobile, 2 col tablet+ ───────────────── */
+.md-staff-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+}
+
+@media (min-width: 640px) {
+    .md-staff-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.md-staff-card {
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background .12s;
+}
+
+/* Remove bottom border from last row (handles both 1-col and 2-col) */
+.md-staff-grid:has(.md-staff-card:nth-last-child(1):nth-child(odd))
+    .md-staff-card:last-child { border-bottom: none; }
+.md-staff-card:nth-last-child(-n+2):nth-child(even) ~ .md-staff-card,
+.md-staff-card:last-child { border-bottom: none; }
+
+.md-staff-card:hover {
+    background: #f8fafc;
+}
+
+/* Avatar — larger than the old person-row version */
+.md-staff-card__avatar {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #003366, #00509e);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.md-staff-card__avatar--photo {
+    background: none;
+}
+
+.md-staff-card__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.md-staff-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.md-staff-card__name {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.md-staff-card__email {
+    font-size: .76rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    margin-top: .15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.md-staff-card__role {
+    flex-shrink: 0;
+}
+
+/* ── Programme grid — 1 col mobile, 2 col tablet+ ───────────── */
+.md-prog-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .md-prog-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.md-prog-card {
+    border-radius: 10px;
+    border: 1px solid #e6eaf0;
+    overflow: hidden;
+    transition: box-shadow .15s, transform .15s;
+}
+
+.md-prog-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    transform: translateY(-2px);
+}
+
+/* Colour bar at the top of each card */
+.md-prog-card__bar {
+    height: 4px;
+}
+
+.md-prog-card--ug .md-prog-card__bar { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+.md-prog-card--pg .md-prog-card__bar { background: linear-gradient(90deg, #92400e, #d97706); }
+
+.md-prog-card__body {
+    padding: 1rem 1.1rem;
+}
+
+.md-prog-card__title {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.35;
+    margin-bottom: .6rem;
+}
+
+.md-prog-card__meta {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
 }

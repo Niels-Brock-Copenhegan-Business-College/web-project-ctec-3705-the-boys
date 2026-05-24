@@ -22,7 +22,7 @@ include __DIR__ . '/header.php';
             <td><?= htmlspecialchars($i['email'], ENT_QUOTES) ?></td>
             <td><?= htmlspecialchars($i['registered_at'], ENT_QUOTES) ?></td>
             <td>
-              <form method="POST" action="<?= base_url('/admin/interests/' . $i['id'] . '/delete') ?>" class="delete-form">
+              <form method="POST" action="<?= base_url('/admin/interests/' . $i['id'] . '/delete') ?>" class="delete-form">  <?= csrf_field() ?>
                 <button class="btn btn-sm btn-danger" aria-label="Remove <?= htmlspecialchars($i['email'], ENT_QUOTES) ?>">Remove</button>
               </form>
             </td>
