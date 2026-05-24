@@ -25,6 +25,7 @@
         <div class="alert alert-danger" role="alert"><?= htmlspecialchars($error, ENT_QUOTES) ?></div>
       <?php endif; ?>
       <form method="POST" action="<?= base_url('/admin/login') ?>">
+        <?= csrf_field() ?>
         <div class="mb-3">
           <label for="username" class="form-label">Username</label>
           <input id="username" type="text" name="username" class="form-control" required autofocus>

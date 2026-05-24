@@ -8,6 +8,7 @@ include __DIR__ . '/header.php';
 <div class="card shadow-sm" style="max-width:600px">
   <div class="card-body">
     <form method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+      <?= csrf_field() ?>
       <div class="mb-3">
         <label for="title" class="form-label">Module Title</label>
         <input id="title" type="text" name="title" class="form-control" required

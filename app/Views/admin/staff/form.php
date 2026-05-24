@@ -20,6 +20,8 @@ $errors = $errors ?? [];
 <?php endif; ?>
 
 <form method="POST" action="<?= $staff ? base_url('/admin/staff/' . $staff['id']) : base_url('/admin/staff') ?>" class="row g-3" style="max-width: 600px;">
+   <?= csrf_field() ?>
+
   
   <!-- Username (read-only if editing) -->
   <div class="col-12">

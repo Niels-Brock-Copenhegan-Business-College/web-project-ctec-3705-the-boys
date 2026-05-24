@@ -152,6 +152,7 @@ $initials  = mb_strtoupper(mb_substr($staff['full_name'] ?? 'S', 0, 1));
 
     <div class="ep-card">
         <form method="POST" action="<?= base_url('/staff/profile/edit') ?>" enctype="multipart/form-data">
+            <?= csrf_field() ?>
 
             <!-- Read-only: admin-managed fields -->
             <div class="ep-section-head">Account details &nbsp;&middot;&nbsp; Managed by admin</div>

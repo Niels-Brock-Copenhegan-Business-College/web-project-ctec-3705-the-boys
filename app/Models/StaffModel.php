@@ -35,6 +35,28 @@ class StaffModel
         return null;
     }
 
+    public function incrementLoginAttempts(int $id): void
+{
+    $this->pdo->prepare(
+        'UPDATE staff SET login_attempts = login_attempts + 1 WHERE id = ?'
+    )->execute([$id]);
+}
+
+public function lockAccount(int $id, int $minutes = 15): void
+{
+    $this->pdo->prepare(
+        'UPDATE staff SET login_attempts = login_attempts + 1,
+         locked_until = DATE_ADD(NOW(), INTERVAL ? MINUTE) WHERE id = ?'
+    )->execute([$minutes, $id]);
+}
+
+public function resetLoginAttempts(int $id): void
+{
+    $this->pdo->prepare(
+        'UPDATE staff SET login_attempts = 0, locked_until = NULL WHERE id = ?'
+    )->execute([$id]);
+}
+
     public function create(array $data, int $createdBy): int
     {
         $stmt = $this->pdo->prepare(

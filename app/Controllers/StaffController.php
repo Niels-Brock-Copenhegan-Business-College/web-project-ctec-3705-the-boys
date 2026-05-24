@@ -426,4 +426,52 @@ class StaffController
         $this->flash('success', 'Profile updated successfully.');
         return $res->withHeader('Location', base_url('/staff/profile/edit'))->withStatus(302);
     }
+
+    /**
+     * All interests — shows every registration across all programmes
+     * assigned to the logged-in staff member.
+     * Security: JOIN on staff_programmes means staff can never see
+     * registrations outside their own assigned programmes.
+     */
+    public function interests(Request $req, Response $res): Response
+    {
+        $staffId = (int) $_SESSION['staff_id'];
+
+        // Fetch all registrations filtered to this staff's programmes only.
+        // The JOIN on staff_programmes is the security boundary.
+        $stmt = $this->staffModel->getPdo()->prepare("
+            SELECT
+                ir.id,
+                ir.first_name,
+                ir.last_name,
+                ir.email,
+                ir.registered_at,
+                p.id    AS programme_id,
+                p.title AS programme_title,
+                p.level AS programme_level
+            FROM interest_registrations ir
+            JOIN programmes p
+                ON ir.programme_id = p.id
+            JOIN staff_programmes sp
+                ON sp.programme_id = ir.programme_id
+               AND sp.staff_id = ?
+            ORDER BY p.title ASC, ir.registered_at DESC
+        ");
+        $stmt->execute([$staffId]);
+        $registrations = $stmt->fetchAll();
+
+        // Group by programme name for the view
+        $grouped = [];
+        foreach ($registrations as $r) {
+            $grouped[$r['programme_title']][] = $r;
+        }
+
+        return $this->renderer->render($res, 'staff/interests.php', [
+            'staff'         => $this->staffModel->findById($staffId),
+            'registrations' => $registrations,
+            'grouped'       => $grouped,
+            'flash'         => $this->getFlash(),
+        ]);
+    }
+
 }

@@ -244,6 +244,7 @@ $oldUser = $oldUser ?? '';
 
         <div class="sl-card">
             <form method="POST" action="<?= base_url('/login') ?>" novalidate>
+                <?= csrf_field() ?>
 
                 <!-- Username -->
                 <div>

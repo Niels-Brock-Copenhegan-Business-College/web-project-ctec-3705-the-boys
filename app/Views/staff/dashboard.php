@@ -44,9 +44,6 @@ $profileComplete = $hasPhoto && $hasBio;
                 </span>
             </p>
         </div>
-        <a href="<?= base_url('/staff/programmes') ?>" class="btn btn-outline-primary btn-sm">
-            View all programmes &rarr;
-        </a>
     </div>
 
     <!-- Stat cards -->
@@ -141,7 +138,7 @@ $profileComplete = $hasPhoto && $hasBio;
                         <div class="staff-year-group">
                             <div class="staff-year-label">Year <?= $year ?></div>
                             <?php foreach ($yearModules as $m): ?>
-                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>"
+                                <a href="<?= base_url('/staff/modules/' . (int)$m['id']) ?>?from=dashboard"
                                    class="staff-module-row"
                                    aria-label="View details for <?= htmlspecialchars($m['title'], ENT_QUOTES) ?>">
                                     <div class="staff-module-row__body">
@@ -244,11 +241,7 @@ $profileComplete = $hasPhoto && $hasBio;
     <?php endforeach; ?>
 </ul>
 
-<div class="mt-3 text-center">
-    <a href="<?= base_url('/staff/programmes') ?>" class="small text-primary text-decoration-none fw-medium">
-        View all registrations &rarr;
-    </a>
-</div>
+<a href="<?= base_url('/staff/interests') ?>" class="staff-view-all staff-view-all--center">See all</a>
             </div>
             <?php endif; ?>
 

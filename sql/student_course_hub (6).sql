@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 21, 2026 at 11:56 AM
+-- Generation Time: May 24, 2026 at 05:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,17 +32,19 @@ CREATE TABLE `admins` (
   `username` varchar(100) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `secret_code_hash` varchar(255) DEFAULT NULL,
-  `secret_code_set_at` datetime DEFAULT NULL
+  `secret_code_set_at` datetime DEFAULT NULL,
+  `login_attempts` tinyint(4) DEFAULT 0,
+  `locked_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `password_hash`, `secret_code_hash`, `secret_code_set_at`) VALUES
-(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm', NULL, NULL),
-(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL),
-(3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06');
+INSERT INTO `admins` (`id`, `username`, `password_hash`, `secret_code_hash`, `secret_code_set_at`, `login_attempts`, `locked_until`) VALUES
+(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm', NULL, NULL, 0, NULL),
+(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL, 1, NULL),
+(3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -112,7 +114,9 @@ INSERT INTO `interest_registrations` (`id`, `first_name`, `last_name`, `email`, 
 (4, 'Daniel', 'Smith', 'daniel.smith@example.com', 9, '53c788b75a9f30e93def369717fb07a20d4adaf336570f95bb738dca11b15483', '2026-05-13 20:21:42'),
 (5, 'Sofia', 'Ali', 'sofia.ali@example.com', 12, '8a038a3083bdc338b774a4e5e9a56b6b84e9bfdb85bd06c10f37fa9678f7beee', '2026-05-13 20:21:42'),
 (6, 'Chitraranjan', 'Yadav', 'chitra123@gmail.com', 1, 'd4b86886b0c7561c010613997f1a27b39dfc1e5cf2cabd01f2b89518d53f6599', '2026-05-13 21:23:42'),
-(7, 'Chitraranjan', 'Yadav', 'chitraranjanyadavr360@gmail.com', 9, 'a9e3d22945c3cd1332d5fb2863f9be6186e9ee622efde5c7b1574708b7d0502f', '2026-05-17 00:54:15');
+(10, 'hi', 'lol', 'test123@gmail.com', 5, '6bbe8f23ddcfea7fa28febcdfb781fb637b9be82a92a80415e147dfc0bcb78c9', '2026-05-21 13:09:04'),
+(22, 'NIRANJAN', 'GC', 'niranjangc.me@gmail.com', 3, '643ce0948402f01b7ee07de9139d99c69a24dda01e4f579b374af72dcb64f299', '2026-05-23 15:08:48'),
+(23, 'NIRANJAN', 'GC', 'niranjangc975@gmail.com', 3, '11ab6405853717b024b1f70fddadc77c83d0defe5c9c3dfa7f7a0dbd7fd97a5c', '2026-05-24 17:32:14');
 
 -- --------------------------------------------------------
 
@@ -138,11 +142,11 @@ INSERT INTO `modules` (`id`, `title`, `description`, `photo`, `year_of_study`, `
 (2, 'Mathematics for Computing', 'This module provides the mathematical foundations required in computer science. Students explore logic, sets, discrete structures, and introductory calculus. The focus is on developing analytical thinking and understanding how mathematical principles support algorithms, data structures, and computational models. The module strengthens problem‑solving skills essential for technical subjects and prepares learners for more advanced computing modules.', NULL, 1, '2026-05-13 20:06:26'),
 (3, 'Data Structures & Algorithms', 'Students learn core data structures such as arrays, linked lists, stacks, queues, trees, and graphs, along with fundamental algorithms for sorting, searching, and traversal. The module emphasises algorithmic thinking and complexity analysis, helping students evaluate performance and efficiency. Practical exercises reinforce understanding and prepare learners for advanced programming, system design, and technical interviews.', NULL, 2, '2026-05-13 20:06:26'),
 (4, 'Software Engineering', 'This module introduces professional software development practices, including agile methodologies, design patterns, version control, and testing strategies. Students learn how to plan, design, build, and maintain software systems collaboratively. The module emphasises quality, maintainability, documentation, and real‑world workflows used in modern engineering teams, preparing learners for industry‑level development environments.', NULL, 2, '2026-05-13 20:06:26'),
-(5, 'Final Year Project', 'Students undertake an independent research and development project supervised by academic staff. The module encourages creativity, critical thinking, and technical depth. Learners define a problem, conduct research, design a solution, and produce a final deliverable demonstrating their skills and knowledge. It represents a major capstone experience and showcases the student’s academic and practical abilities.', NULL, 3, '2026-05-13 20:06:26'),
+(5, 'Final Year Project', 'Students undertake an independent research and development project supervised by academic staff. The module encourages creativity, critical thinking, and technical depth. Learners define a problem, conduct research, design a solution, and produce a final deliverable demonstrating their skills and knowledge. It represents a major capstone experience and showcases the student’s academic and practical abilities.', 'module_1779457818_81bfe4ac.jpg', 3, '2026-05-13 20:06:26'),
 (6, 'Principles of Management', 'This module introduces key management concepts including organisational behaviour, leadership styles, motivation, and decision‑making. Students explore how managers coordinate people and resources to achieve organisational goals. The module builds understanding of workplace dynamics, communication, and effective leadership practices essential for business environments.', NULL, 1, '2026-05-13 20:06:26'),
 (7, 'Marketing Fundamentals', 'Students learn core marketing principles such as the marketing mix, segmentation, consumer behaviour, and digital marketing. The module explains how organisations create value, communicate with audiences, and build effective marketing strategies across different channels. It provides a strong foundation for further study in marketing and business.', NULL, 1, '2026-05-13 20:06:26'),
 (8, 'Financial Accounting', 'This module covers the fundamentals of financial accounting, including balance sheets, income statements, and ratio analysis. Students learn how organisations record, summarise, and interpret financial information to support decision‑making and communicate performance. The module builds essential skills for business, finance, and accounting roles.', NULL, 2, '2026-05-13 20:06:26'),
-(9, 'Machine Learning', 'Students explore supervised and unsupervised learning, neural networks, model evaluation, and practical machine learning using tools such as scikit‑learn and TensorFlow. The module focuses on building, training, and assessing predictive models for real‑world applications. Learners gain hands‑on experience with modern machine learning workflows.', NULL, 1, '2026-05-13 20:06:26'),
+(9, 'Machine Learning', 'Students explore supervised and unsupervised learning, neural networks, model evaluation, and practical machine learning using tools such as scikit‑learn and TensorFlow. The module focuses on building, training, and assessing predictive models for real‑world applications. Learners gain hands‑on experience with modern machine learning workflows.', 'module_1779538640_50d159ef.jpg', 1, '2026-05-13 20:06:26'),
 (10, 'Big Data Technologies', 'This module introduces large‑scale data processing using Hadoop, Spark, and cloud‑based data pipelines. Students learn how distributed systems handle massive datasets and how to design workflows for analytics and processing at scale. The module prepares learners for working with modern big data technologies.', NULL, 1, '2026-05-13 20:06:26'),
 (11, 'Statistical Methods', 'Students learn probability, hypothesis testing, regression analysis, and Bayesian inference. The module focuses on applying statistical techniques to real datasets and interpreting results to support data‑driven decisions. It builds strong analytical and quantitative reasoning skills essential for data‑focused roles.', NULL, 1, '2026-05-13 20:06:26'),
 (12, 'Network Security Fundamentals', 'This module covers essential security concepts including TCP/IP security, firewalls, intrusion detection systems, VPNs, and basic cryptography. Students learn how networks are protected, how attacks occur, and how common threats are mitigated. It provides a strong foundation for further study in cybersecurity.', NULL, 1, '2026-05-13 20:06:26'),
@@ -300,19 +304,22 @@ CREATE TABLE `staff` (
   `password_hash` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `full_name` varchar(255) NOT NULL,
+  `bio` text DEFAULT NULL,
   `role` enum('instructor','coordinator','admin') NOT NULL DEFAULT 'instructor',
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by` int(10) UNSIGNED NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `photo` varchar(255) DEFAULT NULL
+  `photo` varchar(255) DEFAULT NULL,
+  `login_attempts` tinyint(4) DEFAULT 0,
+  `locked_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `staff`
 --
 
-INSERT INTO `staff` (`id`, `username`, `password_hash`, `email`, `full_name`, `role`, `is_active`, `created_by`, `created_at`, `photo`) VALUES
-(1, 'Niranjan', '$2y$10$rac3ucVuVNVz9WRP9opkqeqE7F3dk0g46ZdzEqXiiXNTFtaXU2IOG', 'niranjan123@gmail.com', 'Niranjan GC', 'instructor', 1, 2, '2026-05-14 23:23:54', 'staff_1_95fbeb46.png');
+INSERT INTO `staff` (`id`, `username`, `password_hash`, `email`, `full_name`, `bio`, `role`, `is_active`, `created_by`, `created_at`, `photo`, `login_attempts`, `locked_until`) VALUES
+(1, 'Niranjan', '$2y$10$rac3ucVuVNVz9WRP9opkqeqE7F3dk0g46ZdzEqXiiXNTFtaXU2IOG', 'niranjan123@gmail.com', 'Niranjan GC', 'Hi i am a very good guy', 'instructor', 1, 2, '2026-05-14 23:23:54', 'staff_1_a14d730d.jpg', 5, '2026-05-24 18:00:54');
 
 -- --------------------------------------------------------
 
@@ -331,7 +338,8 @@ CREATE TABLE `staff_modules` (
 
 INSERT INTO `staff_modules` (`staff_id`, `module_id`) VALUES
 (1, 1),
-(1, 5);
+(1, 5),
+(1, 9);
 
 -- --------------------------------------------------------
 
@@ -509,7 +517,7 @@ ALTER TABLE `admin_password_resets`
 -- AUTO_INCREMENT for table `interest_registrations`
 --
 ALTER TABLE `interest_registrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `modules`

@@ -16,6 +16,8 @@ use App\Models\InterestModel;
 use App\Models\StaffModel;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../app/Helpers/csrf.php';
+
 
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
@@ -64,6 +66,7 @@ $moduleCtrl   = new ModuleController($pdo, $moduleModel, $progModel, $renderer);
 $staffCtrl = new StaffController($staffModel, $moduleModel, $progModel, $renderer, $interestModel);
 
 $app = AppFactory::create();
+$app->add(new App\Middleware\CsrfMiddleware());
 $scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));
 if ($scriptName !== '/' && $scriptName !== '.') {
     $app->setBasePath($scriptName);
@@ -219,6 +222,7 @@ $app->group('/staff', function ($group) use ($staffCtrl) {
     $group->get('/programmes',             [$staffCtrl, 'programmes']);
     $group->get('/programmes/{id:[0-9]+}', [$staffCtrl, 'programmeDetail']);
     $group->get('/programmes/{id:[0-9]+}/interests', [$staffCtrl, 'programmeInterests']);
+    $group->get('/interests',                        [$staffCtrl, 'interests']); // all registrations across assigned programmes
     $group->get('/profile/edit',           [$staffCtrl, 'editProfile']);
     $group->post('/profile/edit',          [$staffCtrl, 'updateProfile']);
 })->add($staffAuth);

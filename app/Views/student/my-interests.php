@@ -48,6 +48,7 @@ include __DIR__ . '/../layout/header.php';
     <!-- ── Email lookup form ───────────────────────────────── -->
     <div class="mi-card mb-4">
       <form method="POST" action="<?= base_url('/my-interests') ?>" novalidate aria-label="Look up your interests by email">
+        <?= csrf_field() ?>
 
         <?php if ($error): ?>
           <div class="alert alert-danger d-flex align-items-center gap-2 mb-3"

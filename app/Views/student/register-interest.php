@@ -52,6 +52,7 @@ include __DIR__ . '/../layout/header.php';
       <?php endif; ?>
 
       <form method="POST" action="<?= base_url('/interest') ?>" novalidate id="interestForm">
+        <?= csrf_field() ?>
         <input type="hidden" name="programme_id" value="<?= (int)$prog['id'] ?>">
 
         <div class="mb-3">
