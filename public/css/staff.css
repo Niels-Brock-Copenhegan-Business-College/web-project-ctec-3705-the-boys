@@ -427,6 +427,17 @@
     overflow: hidden;
 }
 
+.staff-person-avatar--photo {
+    background: none;
+    padding: 0;
+}
+
+.staff-person-avatar--photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .staff-person-name {
     font-size: .88rem;
     font-weight: 600;

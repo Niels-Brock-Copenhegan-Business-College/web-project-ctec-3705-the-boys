@@ -54,7 +54,12 @@ include __DIR__ . '/../layout/header.php';
       <form method="POST" action="<?= base_url('/interest') ?>" novalidate id="interestForm">
         <?= csrf_field() ?>
         <input type="hidden" name="programme_id" value="<?= (int)$prog['id'] ?>">
-
+        
+<!-- Honeypot: hidden from real users via CSS -->
+<div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+    <label for="website">Leave this blank</label>
+    <input type="text" name="website" id="website" tabindex="-1" autocomplete="off">
+</div>
         <div class="mb-3">
           <label for="first_name" class="form-label">First Name</label>
           <input id="first_name" type="text" name="first_name" class="form-control" required>

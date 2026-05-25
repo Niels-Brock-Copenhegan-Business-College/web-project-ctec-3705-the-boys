@@ -90,33 +90,75 @@ class InterestController
         return $this->renderer->render($res, 'student/register-interest.php', ['prog' => $prog, 'errors' => [], 'success' => false]);
     }
 
-    public function register(Request $req, Response $res): Response
-    {
-        $d = $req->getParsedBody();
-        $progId = (int)($d['programme_id'] ?? 0);
-        $prog   = $this->progModel->findById($progId);
-        $errors = [];
+   public function register(Request $req, Response $res): Response
+{
+    $d      = $req->getParsedBody();
+    $progId = (int)($d['programme_id'] ?? 0);
+    $prog   = $this->progModel->findById($progId);
+    $errors = [];
 
-        $firstName = $this->clean($d['first_name'] ?? '');
-        $lastName  = $this->clean($d['last_name'] ?? '');
-        $email     = filter_var(trim($d['email'] ?? ''), FILTER_VALIDATE_EMAIL);
+    // Guard: programme must exist and be published
+    if (!$prog || empty($prog['is_published'])) {
+        $res->getBody()->write('Programme not found.');
+        return $res->withStatus(404);
+    }
 
-        if (!$firstName) $errors[] = 'First name is required.';
-        if (!$lastName)  $errors[] = 'Last name is required.';
-        if (!$email)     $errors[] = 'A valid email address is required.';
-
-        if ($errors) {
-            return $this->renderer->render($res, 'student/register-interest.php', [
-                'prog' => $prog, 'errors' => $errors, 'success' => false,
-            ]);
-        }
-
-        $registered = $this->model->register([
-            'first_name'   => $firstName,
-            'last_name'    => $lastName,
-            'email'        => $email,
-            'programme_id' => $progId,
+    // Honeypot: bots fill this hidden field, humans don't
+    if (!empty($d['website'])) {
+        // Silently succeed to not tip off bots
+        return $this->renderer->render($res, 'student/register-interest.php', [
+            'prog' => $prog, 'errors' => [], 'success' => true,
         ]);
+    }
+
+    $firstName = $this->clean($d['first_name'] ?? '');
+    $lastName  = $this->clean($d['last_name']  ?? '');
+    $email     = strtolower(trim($d['email']   ?? ''));
+
+    // First name validation
+    if ($firstName === '') {
+        $errors[] = 'First name is required.';
+    } elseif (mb_strlen($firstName) > 100) {
+        $errors[] = 'First name must be 100 characters or fewer.';
+    } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $firstName)) {
+        $errors[] = 'First name contains invalid characters.';
+    }
+
+    // Last name validation
+    if ($lastName === '') {
+        $errors[] = 'Last name is required.';
+    } elseif (mb_strlen($lastName) > 100) {
+        $errors[] = 'Last name must be 100 characters or fewer.';
+    } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $lastName)) {
+        $errors[] = 'Last name contains invalid characters.';
+    }
+
+    // Email validation
+    if ($email === '') {
+        $errors[] = 'Email address is required.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Please enter a valid email address.';
+    } elseif (mb_strlen($email) > 255) {
+        $errors[] = 'Email address is too long.';
+    }
+
+    if ($errors) {
+        return $this->renderer->render($res, 'student/register-interest.php', [
+            'prog'       => $prog,
+            'errors'     => $errors,
+            'success'    => false,
+            'old'        => ['first_name' => $firstName, 'last_name' => $lastName, 'email' => $email],
+        ]);
+    }
+
+    $registered = $this->model->register([
+        'first_name'   => $firstName,
+        'last_name'    => $lastName,
+        'email'        => $email,
+        'programme_id' => $progId,
+    ]);
+
+ 
 
         // Send registration confirmation email
         if ($registered && $prog) {

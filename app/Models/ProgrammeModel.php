@@ -35,27 +35,39 @@ class ProgrammeModel
         return $stmt->fetch() ?: null;
     }
 
-    public function getModules(int $programmeId): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT m.*, pm.year_of_study
-             FROM modules m
-             JOIN programme_modules pm ON pm.module_id = m.id
-             WHERE pm.programme_id = ?
-             ORDER BY pm.year_of_study, m.title'
-        );
-        $stmt->execute([$programmeId]);
-        $grouped = [];
-        foreach ($stmt->fetchAll() as $module) {
-            $year = (int) ($module['year_of_study'] ?? 1);
-            $grouped[$year][] = $module;
-        }
+  public function getModules(int $programmeId): array
+{
+    // Fetch modules for this programme
+    $stmt = $this->pdo->prepare(
+        'SELECT m.*, pm.year_of_study
+         FROM modules m
+         JOIN programme_modules pm ON pm.module_id = m.id
+         WHERE pm.programme_id = ?
+         ORDER BY pm.year_of_study, m.title'
+    );
+    $stmt->execute([$programmeId]);
+    $modules = $stmt->fetchAll();
 
-        ksort($grouped);
+    // For each module, fetch all OTHER programmes it also belongs to
+    $sharedStmt = $this->pdo->prepare(
+        'SELECT p.id, p.title, p.level, pm.year_of_study AS shared_year
+         FROM programme_modules pm
+         JOIN programmes p ON p.id = pm.programme_id
+         WHERE pm.module_id = ? AND pm.programme_id != ? AND p.is_published = 1
+         ORDER BY p.title'
+    );
 
-        return $grouped;
+    $grouped = [];
+    foreach ($modules as $module) {
+        $sharedStmt->execute([$module['id'], $programmeId]);
+        $module['shared_programmes'] = $sharedStmt->fetchAll();
+        $year = (int)($module['year_of_study'] ?? 1);
+        $grouped[$year][] = $module;
     }
 
+    ksort($grouped);
+    return $grouped;
+}
     public function getAssignedStaff(int $programmeId): array
     {
         $stmt = $this->pdo->prepare(

@@ -181,16 +181,28 @@ public function resetLoginAttempts(int $id): void
         $programme = $stmt->fetch();
         if (!$programme) return null;
 
-        // Staff team (no role column — just list them)
-        $stmt = $this->pdo->prepare(
-            'SELECT s.id, s.full_name, s.email, s.role AS staff_role
-             FROM staff s
-             JOIN staff_programmes sp ON sp.staff_id = s.id
-             WHERE sp.programme_id = ?
-             ORDER BY s.full_name ASC'
-        );
-        $stmt->execute([$programmeId]);
-        $programme['staff'] = $stmt->fetchAll();
+       // Staff team — deduplicated by id, source just tells us how they're linked
+$stmt = $this->pdo->prepare(
+    'SELECT s.id, s.full_name, s.email, s.photo, s.role AS staff_role,
+            CASE
+                WHEN sp.staff_id IS NOT NULL AND sm_check.staff_id IS NOT NULL THEN "both"
+                WHEN sp.staff_id IS NOT NULL THEN "programme"
+                ELSE "module"
+            END AS source
+     FROM staff s
+     LEFT JOIN staff_programmes sp
+           ON sp.staff_id = s.id AND sp.programme_id = ?
+     LEFT JOIN (
+         SELECT DISTINCT sm.staff_id
+         FROM staff_modules sm
+         JOIN programme_modules pm ON pm.module_id = sm.module_id
+         WHERE pm.programme_id = ?
+     ) sm_check ON sm_check.staff_id = s.id
+     WHERE sp.staff_id IS NOT NULL OR sm_check.staff_id IS NOT NULL
+     ORDER BY s.full_name ASC'
+);
+$stmt->execute([$programmeId, $programmeId]);
+$programme['staff'] = $stmt->fetchAll();
 
         // Modules grouped by year
         $stmt = $this->pdo->prepare(

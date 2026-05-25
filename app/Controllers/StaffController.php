@@ -252,35 +252,65 @@ class StaffController
      * Redirects to dashboard with flash if not assigned.
      * Supports ?from=dashboard to set the back button destination.
      */
-    public function moduleDetail(Request $req, Response $res, array $args): Response
-    {
-        $staffId  = (int) $_SESSION['staff_id'];
-        $moduleId = (int) $args['id'];
+   public function moduleDetail(Request $req, Response $res, array $args): Response
+{
+    $staffId  = (int) $_SESSION['staff_id'];
+    $moduleId = (int) $args['id'];
 
-        // Access control — redirect instead of raw 403
-        $assigned   = $this->staffModel->getAssignedModules($staffId);
-        $isAssigned = !empty(array_filter($assigned, fn($m) => (int)$m['id'] === $moduleId));
+    // Check 1: does the staff member directly teach this module?
+    $assigned   = $this->staffModel->getAssignedModules($staffId);
+    $isAssigned = !empty(array_filter($assigned, fn($m) => (int)$m['id'] === $moduleId));
 
-        if (!$isAssigned) {
-            $this->flash('error', 'You are not assigned to that module.');
-            return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
+    // Check 2: if not directly assigned, is it part of one of their programmes?
+    $canView = $isAssigned;
+    if (!$canView) {
+        $programmes = $this->staffModel->getAssignedProgrammes($staffId);
+        foreach ($programmes as $p) {
+            $detail = $this->staffModel->getProgrammeDetail((int)$p['id']);
+            if (!$detail) continue;
+            foreach ($detail['modulesByYear'] as $yearModules) {
+                foreach ($yearModules as $m) {
+                    if ((int)$m['id'] === $moduleId) {
+                        $canView = true;
+                        break 3;
+                    }
+                }
+            }
         }
-
-        $module = $this->staffModel->getModuleDetail($moduleId);
-        if (!$module) return $res->withStatus(404);
-
-        // Smart back button — dashboard cards pass ?from=dashboard
-        $from      = $req->getQueryParams()['from'] ?? 'modules';
-        $backUrl   = $from === 'dashboard' ? base_url('/staff') : base_url('/staff/modules');
-        $backLabel = $from === 'dashboard' ? '← Back to dashboard' : '← Back to my modules';
-
-        return $this->renderer->render($res, 'staff/module-detail.php', [
-            'staff'     => $this->staffModel->findById($staffId),
-            'module'    => $module,
-            'backUrl'   => $backUrl,
-            'backLabel' => $backLabel,
-        ]);
     }
+
+    // No access at all — hard redirect
+    if (!$canView) {
+        $this->flash('error', 'You do not have access to that module.');
+        return $res->withHeader('Location', base_url('/staff'))->withStatus(302);
+    }
+
+    $module = $this->staffModel->getModuleDetail($moduleId);
+    if (!$module) return $res->withStatus(404);
+
+    // Smart back button
+    $from  = $req->getQueryParams()['from'] ?? 'modules';
+    $pid   = $req->getQueryParams()['pid']  ?? null;
+
+    if ($from === 'dashboard') {
+        $backUrl   = base_url('/staff');
+        $backLabel = '← Back to dashboard';
+    } elseif ($from === 'programme' && $pid) {
+        $backUrl   = base_url('/staff/programmes/' . (int)$pid);
+        $backLabel = '← Back to programme';
+    } else {
+        $backUrl   = base_url('/staff/modules');
+        $backLabel = '← Back to my modules';
+    }
+
+    return $this->renderer->render($res, 'staff/module-detail.php', [
+        'staff'     => $this->staffModel->findById($staffId),
+        'module'    => $module,
+        'iTeach'    => $isAssigned,   // <-- this drives the banner + "View only" badge
+        'backUrl'   => $backUrl,
+        'backLabel' => $backLabel,
+    ]);
+}
 
     /**
      * My Programmes list page
