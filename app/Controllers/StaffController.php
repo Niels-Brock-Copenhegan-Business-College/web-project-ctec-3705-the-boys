@@ -203,7 +203,7 @@ class StaffController
             return $res->withStatus(400)->withHeader('Content-Type', 'application/json');
         }
 
-        $adminModel = new \App\Models\AdminModel($this->pdo);
+        $adminModel = new \App\Models\AdminModel($this->staffModel->getPdo());
         if ($adminModel->verifySecretCode($adminId, $secretCode)) {
             $res->getBody()->write(json_encode(['success' => true]));
             return $res->withHeader('Content-Type', 'application/json');
