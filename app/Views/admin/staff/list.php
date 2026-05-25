@@ -37,6 +37,7 @@ $inactiveStaff = $totalStaff - $activeStaff;
       <strong><?= $inactiveStaff ?></strong> Inactive Staff
     </span>
   </div>
+
 </div>
 
 <?php if (!empty($flash['success'])): ?>
@@ -60,9 +61,10 @@ $inactiveStaff = $totalStaff - $activeStaff;
         <div class="alert alert-info mb-0">No staff members found.</div>
       </div>
     <?php else: ?>
-      <div class="table-responsive">
+   <div class = "container ">
+      <div class="table-responsive ">
         <table class="table table-hover align-middle mb-0">
-          <thead class="table-light">
+          <thead class="table-light-info">
             <tr>
               <th class="ps-4">Full Name</th>
               <th>Role</th>
@@ -133,6 +135,7 @@ $inactiveStaff = $totalStaff - $activeStaff;
             <?php endforeach; ?>
           </tbody>
         </table>
+      </div>
       </div>
     <?php endif; ?>
   </div>

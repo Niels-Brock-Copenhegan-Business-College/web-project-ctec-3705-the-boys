@@ -38,8 +38,9 @@
         <li class="nav-item"><a class="nav-link px-3" href="<?= base_url('/admin/staff') ?>">Staff</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="<?= base_url('/uploads/admin-avatar.png') ?>" alt="Admin" class="avatar me-2" onerror="this.style.display='none'">
-            <span class="d-none d-lg-inline">Admin</span>
+            <?php $adminAvatar = $_SESSION['admin_avatar'] ?? ''; ?>
+            <img src="<?= htmlspecialchars($adminAvatar ? base_url('/' . ltrim($adminAvatar, '/')) : base_url('/uploads/admin-avatar.png'), ENT_QUOTES) ?>" alt="Admin" class="avatar me-2" onerror="this.style.display='none'">
+            <span class="d-none d-lg-inline"><?= htmlspecialchars($_SESSION['admin_username'] ?? 'Admin', ENT_QUOTES) ?></span>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
             <li><a class="dropdown-item" href="<?= base_url('/admin/profile') ?>">Profile</a></li>

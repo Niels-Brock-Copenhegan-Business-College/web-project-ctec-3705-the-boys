@@ -27,4 +27,10 @@ class AdminModel
 
         return password_verify($secretCode, $admin['secret_code_hash']);
     }
+
+    public function updateAvatar(int $adminId, ?string $avatarPath): void
+    {
+        $stmt = $this->pdo->prepare('UPDATE admins SET avatar = ? WHERE id = ?');
+        $stmt->execute([$avatarPath, $adminId]);
+    }
 }

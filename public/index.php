@@ -16,8 +16,12 @@ use App\Models\InterestModel;
 use App\Models\StaffModel;
 
 require __DIR__ . '/../vendor/autoload.php';
+<<<<<<< HEAD
+require __DIR__ . '/../app/Helpers/logging.php';
+=======
 require __DIR__ . '/../app/Helpers/csrf.php';
 
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
 
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
@@ -46,6 +50,9 @@ $pdo = new PDO($dsn, $dbConfig['user'], $dbConfig['pass'], [
     PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ]);
+
+// make PDO available to helper logger
+$GLOBALS['app_pdo'] = $pdo;
 
 // Renderer
 $renderer = new PhpRenderer(__DIR__ . '/../app/Views');
@@ -146,6 +153,8 @@ $app->post('/login',         [$authCtrl, 'unifiedLogin']);
 $app->get('/admin/login',    [$authCtrl, 'loginForm']);
 $app->post('/admin/login',   [$authCtrl, 'login']);
 $app->get('/admin/logout', [$authCtrl, 'logout']);
+$app->get('/admin/profile', [$authCtrl, 'adminProfileForm']);
+$app->post('/admin/profile', [$authCtrl, 'adminProfileUpdate']);
 $app->get('/staff/login',  [$authCtrl, 'staffLoginForm']);
 $app->post('/staff/login', [$authCtrl, 'staffLogin']);
 $app->get('/staff/logout', [$authCtrl, 'staffLogout']);
@@ -212,6 +221,8 @@ $app->group('/superadmin', function ($group) use ($superAdminCtrl) {
     $group->get('', [$superAdminCtrl, 'dashboard']);
     $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
     $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+    $group->get('/logs', [$superAdminCtrl, 'logs']);
+    $group->post('/logs/delete', [$superAdminCtrl, 'deleteLog']);
 })->add($superAdminAuth);
 
 // ── Staff routes (protected) ────────────────────────────────────

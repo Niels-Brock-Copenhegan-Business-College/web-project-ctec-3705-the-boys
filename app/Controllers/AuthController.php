@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\StaffModel;
 use App\Models\InterestModel;
+use App\Models\AdminModel;
 use PHPMailer\PHPMailer\PHPMailer;
 use Slim\Views\PhpRenderer;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -47,6 +48,21 @@ class AuthController
         $d    = $req->getParsedBody();
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
+<<<<<<< HEAD
+        $path = (string) $req->getUri()->getPath();
+
+        // 1. Try admin
+        $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
+        $stmt->execute([$user]);
+        $admin = $stmt->fetch();
+
+        if ($admin && password_verify($pass, $admin['password_hash'])) {
+            session_regenerate_id(true);
+            $_SESSION['admin_id'] = $admin['id'];
+            $_SESSION['admin_username'] = $admin['username'] ?? $user;
+            $_SESSION['admin_avatar'] = $admin['avatar'] ?? null;
+            return $res->withHeader('Location', base_url('/admin'))->withStatus(302);
+=======
  
         // ── 1. Try admin — with brute force protection ───────────
         $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
@@ -109,6 +125,7 @@ class AuthController
                     'oldUser' => htmlspecialchars($user, ENT_QUOTES),
                 ]);
             }
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         }
  
         // ── 2. Try staff — with brute force protection ───────────
@@ -165,8 +182,22 @@ class AuthController
                 ]);
             }
         }
+<<<<<<< HEAD
+
+        // unifiedLogin() is only used for the login POST endpoints
+        // so always log failed attempts here (admins + staff).
+        \app_log('warning', 'Failed login attempt', [
+            'area' => str_replace('/login', '', $path) ?: 'unified',
+            'username' => $user,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+            'method' => $req->getMethod(),
+            'path' => $path,
+        ]);
+
+=======
  
         // ── 3. No match at all ───────────────────────────────────
+>>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         return $this->renderer->render($res, 'login.php', [
             'error'   => 'Incorrect username or password.',
             'flash'   => [],
@@ -291,6 +322,93 @@ class AuthController
     {
         session_destroy();
         return $res->withHeader('Location', base_url('/login'))->withStatus(302);
+    }
+
+    public function adminProfileForm(Request $req, Response $res): Response
+    {
+        $adminId = (int) ($_SESSION['admin_id'] ?? 0);
+        if (!$adminId) {
+            return $res->withHeader('Location', base_url('/admin/login'))->withStatus(302);
+        }
+
+        $admin = (new AdminModel($this->pdo))->findById($adminId);
+        if (!$admin) {
+            return $res->withHeader('Location', base_url('/admin/login'))->withStatus(302);
+        }
+
+        $flash = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+
+        return $this->renderer->render($res, 'admin/profile.php', [
+            'admin' => $admin,
+            'flash' => $flash,
+        ]);
+    }
+
+    public function adminProfileUpdate(Request $req, Response $res): Response
+    {
+        $adminId = (int) ($_SESSION['admin_id'] ?? 0);
+        if (!$adminId) {
+            return $res->withHeader('Location', base_url('/admin/login'))->withStatus(302);
+        }
+
+        $adminModel = new AdminModel($this->pdo);
+        $admin = $adminModel->findById($adminId);
+        if (!$admin) {
+            return $res->withHeader('Location', base_url('/admin/login'))->withStatus(302);
+        }
+
+        $files = $req->getUploadedFiles();
+        $avatar = $files['avatar'] ?? null;
+
+        if (!$avatar || $avatar->getError() !== UPLOAD_ERR_OK) {
+            $_SESSION['flash']['error'] = 'Please choose an image to upload.';
+            return $res->withHeader('Location', base_url('/admin/profile'))->withStatus(302);
+        }
+
+        $allowedTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+        ];
+        $clientType = strtolower((string) $avatar->getClientMediaType());
+        $extension = $allowedTypes[$clientType] ?? null;
+
+        if (!$extension) {
+            $_SESSION['flash']['error'] = 'Only JPG, PNG, WEBP, or GIF images are allowed.';
+            return $res->withHeader('Location', base_url('/admin/profile'))->withStatus(302);
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/admins/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+
+        $newFileName = 'admin_' . $adminId . '_' . time() . '.' . $extension;
+        $destination = $uploadDir . $newFileName;
+
+        try {
+            $avatar->moveTo($destination);
+        } catch (\Throwable $e) {
+            $_SESSION['flash']['error'] = 'Unable to upload profile picture.';
+            return $res->withHeader('Location', base_url('/admin/profile'))->withStatus(302);
+        }
+
+        $oldAvatar = (string) ($admin['avatar'] ?? '');
+        if ($oldAvatar !== '') {
+            $oldPath = __DIR__ . '/../../public/' . ltrim($oldAvatar, '/');
+            if (is_file($oldPath) && strpos(realpath($oldPath) ?: '', realpath($uploadDir) ?: '') === 0) {
+                @unlink($oldPath);
+            }
+        }
+
+        $relativePath = 'uploads/admins/' . $newFileName;
+        $adminModel->updateAvatar($adminId, $relativePath);
+        $_SESSION['admin_avatar'] = $relativePath;
+        $_SESSION['flash']['success'] = 'Profile picture updated.';
+
+        return $res->withHeader('Location', base_url('/admin/profile'))->withStatus(302);
     }
 
     public function adminSendStaffResetLink(Request $req, Response $res, array $args): Response
