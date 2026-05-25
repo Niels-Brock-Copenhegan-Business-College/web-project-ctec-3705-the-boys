@@ -1,9 +1,13 @@
-<?php
-$pageTitle      = 'My Interests';
-$error          = $error          ?? null;
-$registrations  = $registrations  ?? null;
-$email          = $email          ?? '';
-$withdrawn      = $withdrawn      ?? false;
+﻿<?php
+// Student my-interests.php
+// Lookup page for students to view and manage programme interest registrations.
+// Includes email search form, error display, withdrawal confirmation, and results.
+
+$pageTitle     = 'My Interests';
+$error         = $error ?? null;
+$registrations = $registrations ?? null;
+$email         = $email ?? '';
+$withdrawn     = $withdrawn ?? false;
 include __DIR__ . '/../layout/header.php';
 ?>
 
@@ -14,19 +18,25 @@ include __DIR__ . '/../layout/header.php';
       <a href="<?= base_url('/') ?>" class="mi-back">
         <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to programmes
       </a>
+
       <div class="mi-head__icon" aria-hidden="true">
         <i class="bi bi-bookmark-heart"></i>
       </div>
+
       <h1 class="mi-head__title" id="mi-heading">My registered interests</h1>
       <p class="mi-head__sub">
         Enter your email address to view and manage the programmes you've registered interest in.
       </p>
     </div>
 
-    <!-- ── Withdrawal confirmation (auto-dismisses after 5s) ── -->
+    <!-- Withdrawal confirmation alert. -->
     <?php if ($withdrawn): ?>
-      <div class="alert alert-success alert-dismissible d-flex align-items-start gap-3 mb-4"
-           role="alert" aria-live="polite" id="withdrawAlert">
+      <div
+        class="alert alert-success alert-dismissible d-flex align-items-start gap-3 mb-4"
+        role="alert"
+        aria-live="polite"
+        id="withdrawAlert"
+      >
         <i class="bi bi-check-circle-fill fs-5 flex-shrink-0 mt-1" aria-hidden="true"></i>
         <div>
           <strong>Interest withdrawn successfully.</strong><br>
@@ -34,6 +44,7 @@ include __DIR__ . '/../layout/header.php';
         </div>
         <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
+
       <script>
         setTimeout(() => {
           const el = document.getElementById('withdrawAlert');
@@ -45,14 +56,18 @@ include __DIR__ . '/../layout/header.php';
       </script>
     <?php endif; ?>
 
-    <!-- ── Email lookup form ───────────────────────────────── -->
+    <!-- Email lookup form. -->
     <div class="mi-card mb-4">
       <form method="POST" action="<?= base_url('/my-interests') ?>" novalidate aria-label="Look up your interests by email">
         <?= csrf_field() ?>
 
         <?php if ($error): ?>
-          <div class="alert alert-danger d-flex align-items-center gap-2 mb-3"
-               role="alert" id="mi-error" aria-live="polite">
+          <div
+            class="alert alert-danger d-flex align-items-center gap-2 mb-3"
+            role="alert"
+            id="mi-error"
+            aria-live="polite"
+          >
             <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i>
             <span><?= htmlspecialchars($error, ENT_QUOTES) ?></span>
           </div>
@@ -78,19 +93,18 @@ include __DIR__ . '/../layout/header.php';
             <i class="bi bi-search me-1" aria-hidden="true"></i> Find my interests
           </button>
         </div>
+
         <p class="form-text mt-2">
           <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>
           We only use this to look up your registrations — no account required.
         </p>
-
       </form>
     </div>
 
-    <!-- ── Results ─────────────────────────────────────────── -->
+    <!-- Result set: either empty state or registration list. -->
     <?php if ($registrations !== null): ?>
 
       <?php if (empty($registrations)): ?>
-
         <div class="mi-empty" role="status">
           <i class="bi bi-inbox mi-empty__icon" aria-hidden="true"></i>
           <p class="mi-empty__title">No registrations found</p>
@@ -103,13 +117,11 @@ include __DIR__ . '/../layout/header.php';
         </div>
 
       <?php else: ?>
-
         <div class="mi-results">
           <div class="mi-results__header">
             <span class="mi-results__count">
               <i class="bi bi-bookmark-check me-1" aria-hidden="true"></i>
-              <?= count($registrations) ?> registration<?= count($registrations) !== 1 ? 's' : '' ?>
-              found for <strong><?= htmlspecialchars($email, ENT_QUOTES) ?></strong>
+              <?= count($registrations) ?> registration<?= count($registrations) !== 1 ? 's' : '' ?> found for <strong><?= htmlspecialchars($email, ENT_QUOTES) ?></strong>
             </span>
           </div>
 
@@ -131,19 +143,22 @@ include __DIR__ . '/../layout/header.php';
                   </p>
                 </div>
 
-                <form method="POST"
-                      action="<?= base_url('/my-interests/withdraw') ?>"
-                      class="mi-item__action"
-                      aria-label="Withdraw interest in <?= htmlspecialchars($r['programme_title'], ENT_QUOTES) ?>">
-                  <input type="hidden" name="token"          value="<?= htmlspecialchars($r['withdraw_token'], ENT_QUOTES) ?>">
+                <form
+                  method="POST"
+                  action="<?= base_url('/my-interests/withdraw') ?>"
+                  class="mi-item__action"
+                  aria-label="Withdraw interest in <?= htmlspecialchars($r['programme_title'], ENT_QUOTES) ?>"
+                >
+                  <input type="hidden" name="token" value="<?= htmlspecialchars($r['withdraw_token'], ENT_QUOTES) ?>">
                   <input type="hidden" name="redirect_email" value="<?= htmlspecialchars($email, ENT_QUOTES) ?>">
-                  <button type="submit"
-                          class="btn btn-outline-danger btn-sm mi-withdraw-btn"
-                          onclick="return confirm('Remove your interest in <?= addslashes(htmlspecialchars($r['programme_title'], ENT_QUOTES)) ?>?')">
+                  <button
+                    type="submit"
+                    class="btn btn-outline-danger btn-sm mi-withdraw-btn"
+                    onclick="return confirm('Remove your interest in <?= addslashes(htmlspecialchars($r['programme_title'], ENT_QUOTES)) ?>?')"
+                  >
                     <i class="bi bi-x-circle me-1" aria-hidden="true"></i> Withdraw
                   </button>
                 </form>
-
               </li>
             <?php endforeach; ?>
           </ul>
@@ -153,7 +168,6 @@ include __DIR__ . '/../layout/header.php';
             Withdrawing removes you from the mailing list for that programme only.
           </p>
         </div>
-
       <?php endif; ?>
 
     <?php endif; ?>

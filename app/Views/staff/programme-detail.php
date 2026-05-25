@@ -110,7 +110,7 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                 <?php endif; ?>
             </div>
             <h1 class="prog-hero__title"><?= htmlspecialchars($programme['title'] ?? '', ENT_QUOTES) ?></h1>
-            <p class="prog-hero__desc"><?= htmlspecialchars($programme['description'] ?? '', ENT_QUOTES) ?></p>
+           <p class="prog-hero__desc" style="text-align:justify;"><?= htmlspecialchars($programme['description'] ?? '', ENT_QUOTES) ?></p>
             <div class="prog-hero__stats">
                 <div>
                     <div class="prog-hero__stat-n"><?= $totalModules ?></div>

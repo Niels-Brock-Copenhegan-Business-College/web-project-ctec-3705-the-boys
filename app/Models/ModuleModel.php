@@ -20,18 +20,18 @@ class ModuleModel
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO modules (title, description, photo) VALUES (?, ?, ?)'
+            'INSERT INTO modules (title, description, credits, photo) VALUES (?, ?, ?, ?)'
         );
-        $stmt->execute([$data['title'], $data['description'], $data['photo'] ?? null]);
+   $stmt->execute([$data['title'], $data['description'], $data['credits'] ?? 20, $data['photo'] ?? null]);
         return (int) $this->pdo->lastInsertId();
     }
 
     public function update(int $id, array $data): void
     {
         $stmt = $this->pdo->prepare(
-            'UPDATE modules SET title=?, description=?, photo=? WHERE id=?'
+            'UPDATE modules SET title=?, description=?, credits=?, photo=? WHERE id=?'
         );
-        $stmt->execute([$data['title'], $data['description'], $data['photo'] ?? null, $id]);
+$stmt->execute([$data['title'], $data['description'], $data['credits'] ?? 20, $data['photo'] ?? null, $id]);
     }
 
     public function delete(int $id): void

@@ -57,6 +57,99 @@ public function resetLoginAttempts(int $id): void
     )->execute([$id]);
 }
 
+    public function createPasswordResetToken(int $staffId, ?int $createdBy = null): array
+    {
+        $this->pdo->prepare('DELETE FROM staff_password_resets WHERE staff_id = ? AND used_at IS NULL')
+                  ->execute([$staffId]);
+
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $expiresAt = (new \DateTimeImmutable('+1 hour'))->format('Y-m-d H:i:s');
+
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO staff_password_resets (staff_id, token_hash, expires_at, created_by)
+             VALUES (?, ?, ?, ?)'
+        );
+        $stmt->execute([$staffId, $tokenHash, $expiresAt, $createdBy]);
+
+        return [
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ];
+    }
+
+    public function findPasswordResetToken(string $token): ?array
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT spr.id AS reset_id,
+                    spr.staff_id,
+                    spr.expires_at,
+                    spr.used_at,
+                    spr.created_at,
+                    s.username,
+                    s.email,
+                    s.full_name,
+                    s.is_active
+             FROM staff_password_resets spr
+             JOIN staff s ON s.id = spr.staff_id
+             WHERE spr.token_hash = ?
+             LIMIT 1'
+        );
+        $stmt->execute([hash('sha256', $token)]);
+        $reset = $stmt->fetch();
+
+        if (!$reset || !empty($reset['used_at']) || strtotime($reset['expires_at']) < time()) {
+            return null;
+        }
+
+        return $reset;
+    }
+
+    public function resetPasswordWithToken(string $token, string $newPassword): bool
+    {
+        $tokenHash = hash('sha256', $token);
+
+        $this->pdo->beginTransaction();
+        try {
+            $stmt = $this->pdo->prepare(
+                'SELECT id, staff_id
+                 FROM staff_password_resets
+                 WHERE token_hash = ?
+                   AND used_at IS NULL
+                   AND expires_at > NOW()
+                 LIMIT 1
+                 FOR UPDATE'
+            );
+            $stmt->execute([$tokenHash]);
+            $reset = $stmt->fetch();
+
+            if (!$reset) {
+                $this->pdo->rollBack();
+                return false;
+            }
+
+            $updateStaff = $this->pdo->prepare('UPDATE staff SET password_hash = ? WHERE id = ?');
+            $updateStaff->execute([password_hash($newPassword, PASSWORD_BCRYPT), (int) $reset['staff_id']]);
+
+            $markUsed = $this->pdo->prepare('UPDATE staff_password_resets SET used_at = NOW() WHERE id = ?');
+            $markUsed->execute([(int) $reset['id']]);
+
+            $this->pdo->commit();
+            return true;
+        } catch (\Throwable) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            return false;
+        }
+    }
+
+    public function deletePasswordResetToken(string $token): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM staff_password_resets WHERE token_hash = ?');
+        $stmt->execute([hash('sha256', $token)]);
+    }
+
     public function create(array $data, int $createdBy): int
     {
         $stmt = $this->pdo->prepare(
@@ -152,24 +245,31 @@ public function resetLoginAttempts(int $id): void
 
     // ── Programme assignments ─────────────────────────────────────
 
-    public function getAssignedProgrammes(int $staffId): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT p.*,
-                    (SELECT COUNT(*) FROM programme_modules pm WHERE pm.programme_id = p.id)        AS module_count,
-                    (SELECT COUNT(*) FROM interest_registrations ir WHERE ir.programme_id = p.id)   AS interest_count,
-                    (SELECT COUNT(*) FROM staff_programmes sp2 WHERE sp2.programme_id = p.id)       AS team_count,
-                    (SELECT COUNT(*) FROM staff_modules sm
-                     JOIN programme_modules pm ON pm.module_id = sm.module_id
-                     WHERE pm.programme_id = p.id AND sm.staff_id = ?)                              AS my_module_count
-             FROM programmes p
-             JOIN staff_programmes sp ON sp.programme_id = p.id
-             WHERE sp.staff_id = ?
-             ORDER BY p.level ASC, p.title ASC'
-        );
-        $stmt->execute([$staffId, $staffId]);
-        return $stmt->fetchAll();
-    }
+ public function getAssignedProgrammes(int $staffId): array
+{
+    $stmt = $this->pdo->prepare(
+        'SELECT p.*,
+                (SELECT COUNT(*) FROM programme_modules pm WHERE pm.programme_id = p.id)        AS module_count,
+                (SELECT COUNT(*) FROM interest_registrations ir WHERE ir.programme_id = p.id)   AS interest_count,
+                (
+                    SELECT COUNT(DISTINCT s2.id)
+                    FROM staff s2
+                    LEFT JOIN staff_programmes sp2 ON sp2.staff_id = s2.id AND sp2.programme_id = p.id
+                    LEFT JOIN staff_modules sm2 ON sm2.staff_id = s2.id
+                    LEFT JOIN programme_modules pm2 ON pm2.module_id = sm2.module_id AND pm2.programme_id = p.id
+                    WHERE sp2.staff_id IS NOT NULL OR pm2.programme_id IS NOT NULL
+                )                                                                                AS team_count,
+                (SELECT COUNT(*) FROM staff_modules sm
+                 JOIN programme_modules pm ON pm.module_id = sm.module_id
+                 WHERE pm.programme_id = p.id AND sm.staff_id = ?)                              AS my_module_count
+         FROM programmes p
+         JOIN staff_programmes sp ON sp.programme_id = p.id
+         WHERE sp.staff_id = ?
+         ORDER BY p.level ASC, p.title ASC'
+    );
+    $stmt->execute([$staffId, $staffId]);
+    return $stmt->fetchAll();
+}
 
     /**
      * Full programme detail for staff view.

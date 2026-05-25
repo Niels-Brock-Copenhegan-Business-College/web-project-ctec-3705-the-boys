@@ -90,82 +90,75 @@ class InterestController
         return $this->renderer->render($res, 'student/register-interest.php', ['prog' => $prog, 'errors' => [], 'success' => false]);
     }
 
-   public function register(Request $req, Response $res): Response
-{
-    $d      = $req->getParsedBody();
-    $progId = (int)($d['programme_id'] ?? 0);
-    $prog   = $this->progModel->findById($progId);
-    $errors = [];
+    public function register(Request $req, Response $res): Response
+    {
+        $d      = $req->getParsedBody();
+        $progId = (int)($d['programme_id'] ?? 0);
+        $prog   = $this->progModel->findById($progId);
+        $errors = [];
 
-    // Guard: programme must exist and be published
-    if (!$prog || empty($prog['is_published'])) {
-        $res->getBody()->write('Programme not found.');
-        return $res->withStatus(404);
-    }
+        if (!$prog || empty($prog['is_published'])) {
+            $res->getBody()->write('Programme not found.');
+            return $res->withStatus(404);
+        }
 
-    // Honeypot: bots fill this hidden field, humans don't
-    if (!empty($d['website'])) {
-        // Silently succeed to not tip off bots
-        return $this->renderer->render($res, 'student/register-interest.php', [
-            'prog' => $prog, 'errors' => [], 'success' => true,
+        if (!empty($d['website'])) {
+            return $this->renderer->render($res, 'student/register-interest.php', [
+                'prog' => $prog, 'errors' => [], 'success' => true,
+            ]);
+        }
+
+        $firstName = $this->clean($d['first_name'] ?? '');
+        $lastName  = $this->clean($d['last_name']  ?? '');
+        $email     = strtolower(trim($d['email']   ?? ''));
+
+        if ($firstName === '') {
+            $errors[] = 'First name is required.';
+        } elseif (mb_strlen($firstName) > 100) {
+            $errors[] = 'First name must be 100 characters or fewer.';
+        } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $firstName)) {
+            $errors[] = 'First name contains invalid characters.';
+        }
+
+        if ($lastName === '') {
+            $errors[] = 'Last name is required.';
+        } elseif (mb_strlen($lastName) > 100) {
+            $errors[] = 'Last name must be 100 characters or fewer.';
+        } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $lastName)) {
+            $errors[] = 'Last name contains invalid characters.';
+        }
+
+        if ($email === '') {
+            $errors[] = 'Email address is required.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Please enter a valid email address.';
+        } elseif (mb_strlen($email) > 255) {
+            $errors[] = 'Email address is too long.';
+        }
+
+        if ($errors) {
+            return $this->renderer->render($res, 'student/register-interest.php', [
+                'prog'    => $prog,
+                'errors'  => $errors,
+                'success' => false,
+                'old'     => ['first_name' => $firstName, 'last_name' => $lastName, 'email' => $email],
+            ]);
+        }
+
+        $registered = $this->model->register([
+            'first_name'   => $firstName,
+            'last_name'    => $lastName,
+            'email'        => $email,
+            'programme_id' => $progId,
         ]);
-    }
 
-    $firstName = $this->clean($d['first_name'] ?? '');
-    $lastName  = $this->clean($d['last_name']  ?? '');
-    $email     = strtolower(trim($d['email']   ?? ''));
-
-    // First name validation
-    if ($firstName === '') {
-        $errors[] = 'First name is required.';
-    } elseif (mb_strlen($firstName) > 100) {
-        $errors[] = 'First name must be 100 characters or fewer.';
-    } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $firstName)) {
-        $errors[] = 'First name contains invalid characters.';
-    }
-
-    // Last name validation
-    if ($lastName === '') {
-        $errors[] = 'Last name is required.';
-    } elseif (mb_strlen($lastName) > 100) {
-        $errors[] = 'Last name must be 100 characters or fewer.';
-    } elseif (!preg_match("/^[\p{L}\s'\-]+$/u", $lastName)) {
-        $errors[] = 'Last name contains invalid characters.';
-    }
-
-    // Email validation
-    if ($email === '') {
-        $errors[] = 'Email address is required.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Please enter a valid email address.';
-    } elseif (mb_strlen($email) > 255) {
-        $errors[] = 'Email address is too long.';
-    }
-
-    if ($errors) {
-        return $this->renderer->render($res, 'student/register-interest.php', [
-            'prog'       => $prog,
-            'errors'     => $errors,
-            'success'    => false,
-            'old'        => ['first_name' => $firstName, 'last_name' => $lastName, 'email' => $email],
-        ]);
-    }
-
-    $registered = $this->model->register([
-        'first_name'   => $firstName,
-        'last_name'    => $lastName,
-        'email'        => $email,
-        'programme_id' => $progId,
-    ]);
-
-
-        // Send registration confirmation email
         if ($registered && $prog) {
             $programmeName = $prog['title'] ?? 'the programme';
             $body  = "Hi {$firstName},\n\n";
             $body .= "Thank you for registering your interest in \"{$programmeName}\" at UniHub University.\n\n";
             $body .= "We will keep you updated about open days, application deadlines, and any programme news.\n\n";
-            $body .= "You can view or withdraw your interest at any time by visiting: My-Interests\n";
+            $body .= "You can view or withdraw your interest at any time by visiting:\n";
+            $body .= base_url('/my-interests') . "\n\n";
             $body .= "Regards,\nThe UniHub Admissions Team";
 
             try {
@@ -207,9 +200,9 @@ class InterestController
 
     public function sendProgrammeMail(Request $req, Response $res): Response
     {
-        $data = $req->getParsedBody() ?? [];
+        $data        = $req->getParsedBody() ?? [];
         $programmeId = (int) ($data['programme_id'] ?? 0);
-        $programme = $this->progModel->findById($programmeId);
+        $programme   = $this->progModel->findById($programmeId);
 
         if (!$programme) {
             $this->flash('error', 'Invalid programme selected.');
@@ -223,7 +216,7 @@ class InterestController
         }
 
         $subject = $this->cleanText($data['subject'] ?? ('Update for ' . $programme['title'] . ' Applicants'));
-        $body = $this->cleanText($data['body'] ?? ('Dear student,' . PHP_EOL . PHP_EOL . 'This is an update regarding ' . $programme['title'] . '.' . PHP_EOL . PHP_EOL . 'Regards,' . PHP_EOL . 'Admin Team'));
+        $body    = $this->cleanText($data['body']    ?? ('Dear student,' . PHP_EOL . PHP_EOL . 'This is an update regarding ' . $programme['title'] . '.' . PHP_EOL . PHP_EOL . 'Regards,' . PHP_EOL . 'Admin Team'));
 
         try {
             $this->sendEmail($recipients, $subject, $body, true);
@@ -243,9 +236,9 @@ class InterestController
             return $this->redirectToInterests($res);
         }
 
-        $data = $req->getParsedBody() ?? [];
+        $data    = $req->getParsedBody() ?? [];
         $subject = $this->cleanText($data['subject'] ?? ('Update for ' . ($interest['programme_title'] ?? 'Programme')));
-        $body = $this->cleanText($data['body'] ?? ('Dear ' . ($interest['first_name'] ?? 'student') . ',' . PHP_EOL . PHP_EOL . 'This is an update regarding your interest registration.' . PHP_EOL . PHP_EOL . 'Regards,' . PHP_EOL . 'Admin Team'));
+        $body    = $this->cleanText($data['body']    ?? ('Dear ' . ($interest['first_name'] ?? 'student') . ',' . PHP_EOL . PHP_EOL . 'This is an update regarding your interest registration.' . PHP_EOL . PHP_EOL . 'Regards,' . PHP_EOL . 'Admin Team'));
 
         try {
             $this->sendEmail([(string) $interest['email']], $subject, $body);
@@ -259,12 +252,12 @@ class InterestController
 
     public function exportCsv(Request $req, Response $res, array $args): Response
     {
-        $rows = $this->model->findByProgramme((int)$args['pid']);
-        $prog = $this->progModel->findById((int)$args['pid']);
+        $rows     = $this->model->findByProgramme((int)$args['pid']);
+        $prog     = $this->progModel->findById((int)$args['pid']);
         $filename = 'interests-' . preg_replace('/[^a-z0-9]+/i', '-', $prog['title'] ?? 'export') . '.csv';
 
-        $res = $res->withHeader('Content-Type', 'text/csv')
-                   ->withHeader('Content-Disposition', "attachment; filename=\"$filename\"");
+        $res  = $res->withHeader('Content-Type', 'text/csv')
+                    ->withHeader('Content-Disposition', "attachment; filename=\"$filename\"");
         $body = $res->getBody();
         $body->write("First Name,Last Name,Email,Registered At\r\n");
         foreach ($rows as $r) {
@@ -284,14 +277,11 @@ class InterestController
         return $res->withHeader('Location', $_SERVER['HTTP_REFERER'] ?? base_url('/admin/programmes'))->withStatus(302);
     }
 
-    // ── Student: my interests lookup ─────────────────────────────
-
     public function myInterestsForm(Request $req, Response $res): Response
     {
         $flash = $_SESSION['login_flash'] ?? [];
         unset($_SESSION['login_flash']);
 
-        // Auto-lookup if ?email= param present (e.g. after withdrawal redirect)
         $email         = strtolower(trim($req->getQueryParams()['email'] ?? ''));
         $registrations = null;
 
@@ -337,13 +327,9 @@ class InterestController
         $token         = trim($d['token'] ?? '');
         $redirectEmail = trim($d['redirect_email'] ?? '');
 
-        // Fetch BEFORE deleting so we have name + programme for the email
         $registration = $this->model->findOneByToken($token);
-
-        // Now delete
         $this->model->withdraw($token);
 
-        // Send withdrawal confirmation email
         if ($registration && filter_var($redirectEmail, FILTER_VALIDATE_EMAIL)) {
             $programmeName = $registration['programme_title'] ?? 'the programme';
             $firstName     = $registration['first_name']      ?? 'there';

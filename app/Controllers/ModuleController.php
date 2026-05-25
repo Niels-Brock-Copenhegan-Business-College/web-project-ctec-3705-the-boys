@@ -116,9 +116,10 @@ class ModuleController
         
         $photoFile = $this->handleImageUpload($req);
         
-        $this->model->update($moduleId, [
+       $this->model->update($moduleId, [
             'title'       => $this->clean($d['title'] ?? ''),
             'description' => $this->clean($d['description'] ?? ''),
+            'credits'     => (int)($d['credits'] ?? 20),
             'photo'       => $photoFile ?? ($module['photo'] ?? null),
         ]);
         $this->flash('success', 'Module updated.');
