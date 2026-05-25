@@ -60,7 +60,7 @@ class SuperAdminController
     public function dashboard(Request $req, Response $res): Response
     {
         // Simple dashboard: list admins for management
-        $stmt = $this->pdo->query('SELECT id, username, password_hash FROM admins ORDER BY id ASC');
+        $stmt = $this->pdo->query('SELECT id, username, password_hash, is_active FROM admins ORDER BY id ASC');
         $admins = $stmt->fetchAll();
         return $this->renderer->render($res, 'superadmin/dashboard.php', [
             'admins' => $admins,
@@ -99,7 +99,7 @@ class SuperAdminController
         }
 
         // Create admin with empty password_hash (admin will set password via emailed link)
-        $stmt = $this->pdo->prepare('INSERT INTO admins (username, password_hash) VALUES (?, ?)');
+        $stmt = $this->pdo->prepare('INSERT INTO admins (username, password_hash, is_active) VALUES (?, ?, 1)');
         $stmt->execute([$username, '']);
         $adminId = (int) $this->pdo->lastInsertId();
 
@@ -117,6 +117,80 @@ class SuperAdminController
             $_SESSION['flash']['success'] = 'Admin created and invite email sent.';
         } catch (\Throwable $e) {
             $_SESSION['flash']['error'] = 'Admin created but unable to send invite email.';
+        }
+
+        return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+    }
+
+    public function toggleAdminBlock(Request $req, Response $res, array $args): Response
+    {
+        $adminId = (int) ($args['id'] ?? 0);
+        if ($adminId <= 0) {
+            $_SESSION['flash']['error'] = 'Invalid admin selected.';
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+
+        $stmt = $this->pdo->prepare('SELECT id, username, is_active FROM admins WHERE id = ?');
+        $stmt->execute([$adminId]);
+        $admin = $stmt->fetch();
+
+        if (!$admin) {
+            $_SESSION['flash']['error'] = 'Admin not found.';
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+
+        $newStatus = empty($admin['is_active']) ? 1 : 0;
+        $stmt = $this->pdo->prepare('UPDATE admins SET is_active = ? WHERE id = ?');
+        $stmt->execute([$newStatus, $adminId]);
+
+        \app_log('warning', 'Super admin changed admin active status', [
+            'superadmin_id' => (int) ($_SESSION['superadmin_id'] ?? 0),
+            'admin_id' => $adminId,
+            'username' => $admin['username'] ?? null,
+            'new_status' => $newStatus,
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+        ]);
+
+        $_SESSION['flash']['success'] = $newStatus ? 'Admin unblocked successfully.' : 'Admin blocked successfully.';
+        return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+    }
+
+    public function hardDeleteAdmin(Request $req, Response $res, array $args): Response
+    {
+        $adminId = (int) ($args['id'] ?? 0);
+        if ($adminId <= 0) {
+            $_SESSION['flash']['error'] = 'Invalid admin selected.';
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+
+        $stmt = $this->pdo->prepare('SELECT id, username FROM admins WHERE id = ?');
+        $stmt->execute([$adminId]);
+        $admin = $stmt->fetch();
+
+        if (!$admin) {
+            $_SESSION['flash']['error'] = 'Admin not found.';
+            return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $this->pdo->prepare('DELETE FROM admin_password_resets WHERE admin_id = ?')->execute([$adminId]);
+            $this->pdo->prepare('DELETE FROM admins WHERE id = ?')->execute([$adminId]);
+            $this->pdo->commit();
+
+            \app_log('warning', 'Super admin hard deleted admin', [
+                'superadmin_id' => (int) ($_SESSION['superadmin_id'] ?? 0),
+                'admin_id' => $adminId,
+                'username' => $admin['username'] ?? null,
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+            ]);
+
+            $_SESSION['flash']['success'] = 'Admin deleted permanently.';
+        } catch (\Throwable $e) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            $_SESSION['flash']['error'] = 'Unable to delete admin.';
         }
 
         return $res->withHeader('Location', base_url('/superadmin'))->withStatus(302);

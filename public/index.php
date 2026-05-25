@@ -19,7 +19,6 @@ require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../app/Helpers/logging.php';
 require __DIR__ . '/../app/Helpers/csrf.php';
 
-
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string
     {
@@ -218,6 +217,8 @@ $app->group('/superadmin', function ($group) use ($superAdminCtrl) {
     $group->get('', [$superAdminCtrl, 'dashboard']);
     $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
     $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+    $group->post('/admins/{id:[0-9]+}/block-toggle', [$superAdminCtrl, 'toggleAdminBlock']);
+    $group->post('/admins/{id:[0-9]+}/delete', [$superAdminCtrl, 'hardDeleteAdmin']);
     $group->get('/logs', [$superAdminCtrl, 'logs']);
     $group->post('/logs/delete', [$superAdminCtrl, 'deleteLog']);
 })->add($superAdminAuth);
