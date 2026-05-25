@@ -16,12 +16,9 @@ use App\Models\InterestModel;
 use App\Models\StaffModel;
 
 require __DIR__ . '/../vendor/autoload.php';
-<<<<<<< HEAD
 require __DIR__ . '/../app/Helpers/logging.php';
-=======
 require __DIR__ . '/../app/Helpers/csrf.php';
 
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
 
 if (!function_exists('base_url')) {
     function base_url(string $path = ''): string

@@ -158,7 +158,6 @@ class InterestController
         'programme_id' => $progId,
     ]);
 
- 
 
         // Send registration confirmation email
         if ($registered && $prog) {
@@ -281,8 +280,7 @@ class InterestController
 
     public function adminDelete(Request $req, Response $res, array $args): Response
     {
-        $interestId = (int) $args['id'];
-        $this->model->delete($interestId);
+        $this->model->delete((int)$args['id']);
         return $res->withHeader('Location', $_SERVER['HTTP_REFERER'] ?? base_url('/admin/programmes'))->withStatus(302);
     }
 

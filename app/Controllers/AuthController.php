@@ -48,7 +48,6 @@ class AuthController
         $d    = $req->getParsedBody();
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
-<<<<<<< HEAD
         $path = (string) $req->getUri()->getPath();
 
         // 1. Try admin
@@ -62,70 +61,6 @@ class AuthController
             $_SESSION['admin_username'] = $admin['username'] ?? $user;
             $_SESSION['admin_avatar'] = $admin['avatar'] ?? null;
             return $res->withHeader('Location', base_url('/admin'))->withStatus(302);
-=======
- 
-        // ── 1. Try admin — with brute force protection ───────────
-        $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
-        $stmt->execute([$user]);
-        $admin = $stmt->fetch();
- 
-        if ($admin) {
-            // Check lockout
-            if (!empty($admin['locked_until'])) {
-                $lockedUntil = new \DateTime($admin['locked_until']);
-                $now         = new \DateTime();
-                if ($now < $lockedUntil) {
-                    $diff      = $now->diff($lockedUntil);
-                    $remaining = ($diff->h * 60) + $diff->i + ($diff->s > 0 ? 1 : 0);
-                    return $this->renderer->render($res, 'login.php', [
-                        'error'   => "Too many failed attempts. Please try again in {$remaining} minute(s).",
-                        'flash'   => [],
-                        'oldUser' => htmlspecialchars($user, ENT_QUOTES),
-                    ]);
-                } else {
-                    // Lock expired — reset
-                    $this->pdo->prepare(
-                        'UPDATE admins SET login_attempts = 0, locked_until = NULL WHERE id = ?'
-                    )->execute([$admin['id']]);
-                    $admin['login_attempts'] = 0;
-                    $admin['locked_until']   = null;
-                }
-            }
- 
-            if (password_verify($pass, $admin['password_hash'])) {
-                // Success — reset counter and log in
-                $this->pdo->prepare(
-                    'UPDATE admins SET login_attempts = 0, locked_until = NULL WHERE id = ?'
-                )->execute([$admin['id']]);
-                session_regenerate_id(true);
-                $_SESSION['admin_id'] = $admin['id'];
-                return $res->withHeader('Location', base_url('/admin'))->withStatus(302);
-            }
- 
-            // Wrong password — increment counter
-            $attempts = (int)$admin['login_attempts'] + 1;
-            if ($attempts >= 5) {
-                $this->pdo->prepare(
-                    'UPDATE admins SET login_attempts = login_attempts + 1,
-                     locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?'
-                )->execute([$admin['id']]);
-                return $this->renderer->render($res, 'login.php', [
-                    'error'   => 'Too many failed attempts. Your account has been locked for 15 minutes.',
-                    'flash'   => [],
-                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
-                ]);
-            } else {
-                $this->pdo->prepare(
-                    'UPDATE admins SET login_attempts = login_attempts + 1 WHERE id = ?'
-                )->execute([$admin['id']]);
-                $left = 5 - $attempts;
-                return $this->renderer->render($res, 'login.php', [
-                    'error'   => "Incorrect username or password. {$left} attempt(s) remaining before lockout.",
-                    'flash'   => [],
-                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
-                ]);
-            }
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         }
  
         // ── 2. Try staff — with brute force protection ───────────
@@ -182,7 +117,6 @@ class AuthController
                 ]);
             }
         }
-<<<<<<< HEAD
 
         // unifiedLogin() is only used for the login POST endpoints
         // so always log failed attempts here (admins + staff).
@@ -194,10 +128,6 @@ class AuthController
             'path' => $path,
         ]);
 
-=======
- 
-        // ── 3. No match at all ───────────────────────────────────
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
         return $this->renderer->render($res, 'login.php', [
             'error'   => 'Incorrect username or password.',
             'flash'   => [],
