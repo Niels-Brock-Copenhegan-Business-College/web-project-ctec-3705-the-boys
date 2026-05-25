@@ -48,7 +48,6 @@ class AuthController
         $d    = $req->getParsedBody();
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
-<<<<<<< HEAD
         $path = (string) $req->getUri()->getPath();
 
         // 1. Try admin
@@ -68,7 +67,7 @@ class AuthController
         $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
         $stmt->execute([$user]);
         $admin = $stmt->fetch();
- 
+
         if ($admin) {
             // Check lockout
             if (!empty($admin['locked_until'])) {

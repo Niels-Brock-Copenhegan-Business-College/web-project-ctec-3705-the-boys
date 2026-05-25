@@ -184,7 +184,6 @@ class StaffController
         return $res->withHeader('Location', base_url('/admin/staff'))->withStatus(302);
     }
 
-<<<<<<< HEAD
     /**
      * Verify admin secret code for destructive action
      */
@@ -220,8 +219,6 @@ class StaffController
         return $res->withStatus(403)->withHeader('Content-Type', 'application/json');
     }
 
-=======
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
     // ── Staff portal ──────────────────────────────────────────────
 
     /**
