@@ -34,6 +34,7 @@ CREATE TABLE `admins` (
   `avatar` varchar(255) DEFAULT NULL,
   `secret_code_hash` varchar(255) DEFAULT NULL,
   `secret_code_set_at` datetime DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `login_attempts` tinyint(4) DEFAULT 0,
   `locked_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -48,10 +49,10 @@ INSERT INTO `admins` (`id`, `username`, `password_hash`, `avatar`, `secret_code_
 (2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL, NULL),
 (3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', NULL, '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06');
 =======
-INSERT INTO `admins` (`id`, `username`, `password_hash`, `secret_code_hash`, `secret_code_set_at`, `login_attempts`, `locked_until`) VALUES
-(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm', NULL, NULL, 0, NULL),
-(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL, 1, NULL),
-(3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06', 0, NULL);
+INSERT INTO `admins` (`id`, `username`, `password_hash`, `secret_code_hash`, `secret_code_set_at`, `is_active`, `login_attempts`, `locked_until`) VALUES
+(1, 'admin', '$2y$10$Y5B6dFmHMxqe9JnZBpAZP.nWeTQ1eVv.LKO2KHjQS9a.HV74q9LAm', NULL, NULL, 1, 0, NULL),
+(2, 'Chitraranjan', '$2y$10$ictXo3/apKjwJpT7SiFwD.E5FR2fAtsZicZNCGvWsY/K.xqyANaj2', NULL, NULL, 1, 1, NULL),
+(3, 'Arvind', '$2y$10$4yN/42VbfGJzDX1fHsrT8ub8YVAeUGUpXv6Z8TvaFfy29lIJYmoIG', '$2y$10$YzJPMqfOoJw3JywkwpTc5OTuUu5mLwEEDJHxwSEtqLHFQsxlQ8xEW', '2026-05-21 00:32:06', 1, 0, NULL);
 >>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48:sql/student_course_hub (6).sql
 
 -- --------------------------------------------------------

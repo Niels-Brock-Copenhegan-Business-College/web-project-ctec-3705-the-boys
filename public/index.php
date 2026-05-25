@@ -217,6 +217,8 @@ $app->group('/superadmin', function ($group) use ($superAdminCtrl) {
     $group->get('', [$superAdminCtrl, 'dashboard']);
     $group->get('/admins/create', [$superAdminCtrl, 'showCreateAdminForm']);
     $group->post('/admins', [$superAdminCtrl, 'createAdminSubmit']);
+    $group->post('/admins/{id:[0-9]+}/block-toggle', [$superAdminCtrl, 'toggleAdminBlock']);
+    $group->post('/admins/{id:[0-9]+}/delete', [$superAdminCtrl, 'hardDeleteAdmin']);
     $group->get('/logs', [$superAdminCtrl, 'logs']);
     $group->post('/logs/delete', [$superAdminCtrl, 'deleteLog']);
 })->add($superAdminAuth);

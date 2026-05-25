@@ -21,6 +21,28 @@ class AuthController
     ) {}
 
     private function flash(string $key, string $msg): void { $_SESSION['login_flash'][$key] = $msg; }
+
+    private function tableHasColumns(string $table, array $columns): bool
+    {
+        static $cache = [];
+        $database = (string) ($this->pdo->query('SELECT DATABASE()')->fetchColumn() ?: '');
+        if ($database === '') {
+            return false;
+        }
+
+        $cacheKey = $database . '|' . $table . '|' . implode(',', $columns);
+        if (array_key_exists($cacheKey, $cache)) {
+            return $cache[$cacheKey];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($columns), '?'));
+        $stmt = $this->pdo->prepare(
+            "SELECT COUNT(DISTINCT column_name) FROM information_schema.columns WHERE table_schema = ? AND table_name = ? AND column_name IN ($placeholders)"
+        );
+        $stmt->execute(array_merge([$database, $table], $columns));
+
+        return $cache[$cacheKey] = ((int) $stmt->fetchColumn()) === count($columns);
+    }
  
     // ─── UNIFIED LOGIN FORM ──────────────────────────────────────
  
@@ -51,12 +73,21 @@ class AuthController
         $user = trim($d['username'] ?? '');
         $pass = $d['password']     ?? '';
         $path = (string) $req->getUri()->getPath();
+        $adminActiveEnabled = $this->tableHasColumns('admins', ['is_active']);
 
         $stmt = $this->pdo->prepare('SELECT * FROM admins WHERE username = ?');
         $stmt->execute([$user]);
         $admin = $stmt->fetch();
 
         if ($admin) {
+            if ($adminActiveEnabled && isset($admin['is_active']) && (int) $admin['is_active'] === 0) {
+                return $this->renderer->render($res, 'login.php', [
+                    'error'   => 'This admin account is blocked. Please contact the super admin.',
+                    'flash'   => [],
+                    'oldUser' => htmlspecialchars($user, ENT_QUOTES),
+                ]);
+            }
+
             if (!empty($admin['locked_until'])) {
                 $lockedUntil = new \DateTime($admin['locked_until']);
                 $now = new \DateTime();

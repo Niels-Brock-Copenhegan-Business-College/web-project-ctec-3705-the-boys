@@ -23,6 +23,7 @@ $oldUser = $oldUser ?? '';
     <?php endif; ?>
 
     <form method="POST" action="<?= base_url('/superadmin/login') ?>">
+        <?= csrf_field() ?>
         <div class="mb-3">
             <label class="form-label">Username</label>
             <input name="username" class="form-control" value="<?= htmlspecialchars($oldUser, ENT_QUOTES) ?>" required autofocus>
