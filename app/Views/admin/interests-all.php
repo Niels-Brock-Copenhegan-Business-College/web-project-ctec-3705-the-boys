@@ -4,7 +4,7 @@ $flash = $flash ?? [];
 $pageTitle = 'All Interest Registrations';
 include __DIR__ . '/header.php';
 ?>
-
+ <a href="<?= base_url('/admin') ?>" class="btn btn-outline-secondary mb-3">← Back to dashboard</a>
 <section class="interest-shell mb-4">
   <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3">
     <div>

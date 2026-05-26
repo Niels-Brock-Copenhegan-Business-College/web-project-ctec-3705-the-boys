@@ -229,7 +229,10 @@ class SuperAdminController
                 $stmt = $pdo->query('SELECT id, created_at AS time, level, message, context FROM audit_logs ORDER BY id DESC LIMIT 1000');
                 $rows = $stmt->fetchAll();
                 foreach ($rows as $r) {
-                    $r['context'] = $r['context'] ? json_decode($r['context'], true) : [];
+                    $context = $r['context'] ? json_decode($r['context'], true) : [];
+                    $r['context'] = is_array($context) ? $context : [];
+                    $r['actor'] = $this->formatAuditActor($pdo, $r['context']);
+                    $r['details'] = $this->formatAuditDetails($r['message'] ?? '', $r['context'], $r['actor']);
                     $entries[] = $r;
                 }
             } catch (\PDOException $e) {
@@ -261,6 +264,93 @@ class SuperAdminController
         return $this->renderer->render($res, 'superadmin/logs.php', [
             'entries' => $entries,
         ]);
+    }
+
+    private function formatAuditActor(\PDO $pdo, array $context): string
+    {
+        if (!empty($context['superadmin_id'])) {
+            $stmt = $pdo->prepare('SELECT COALESCE(name, username) FROM super_admins WHERE id = ? LIMIT 1');
+            $stmt->execute([(int) $context['superadmin_id']]);
+            $label = $stmt->fetchColumn();
+            return $label ? 'Super admin ' . $label : 'Super admin #' . (int) $context['superadmin_id'];
+        }
+
+        if (!empty($context['admin_id'])) {
+            $stmt = $pdo->prepare('SELECT username FROM admins WHERE id = ? LIMIT 1');
+            $stmt->execute([(int) $context['admin_id']]);
+            $label = $stmt->fetchColumn();
+            return $label ? 'Admin ' . $label : 'Admin #' . (int) $context['admin_id'];
+        }
+
+        if (!empty($context['staff_id'])) {
+            $stmt = $pdo->prepare('SELECT COALESCE(full_name, username) FROM staff WHERE id = ? LIMIT 1');
+            $stmt->execute([(int) $context['staff_id']]);
+            $label = $stmt->fetchColumn();
+            return $label ? 'Staff member ' . $label : 'Staff member #' . (int) $context['staff_id'];
+        }
+
+        if (!empty($context['username'])) {
+            return 'User ' . (string) $context['username'];
+        }
+
+        return 'System';
+    }
+
+    private function formatAuditDetails(string $message, array $context, string $actor): string
+    {
+        $message = trim($message);
+
+        return match ($message) {
+            'Failed login attempt' => sprintf(
+                '%s tried to sign in as %s from %s using a %s request in the %s area.',
+                $actor,
+                $context['username'] ?? 'an unknown account',
+                $context['ip'] ?? 'an unknown IP address',
+                strtoupper((string) ($context['method'] ?? 'unknown')),
+                $context['area'] ?? 'unknown'
+            ),
+            'Admin deleted module' => sprintf(
+                '%s deleted module #%s.',
+                $actor,
+                $context['module_id'] ?? 'unknown'
+            ),
+            'Wrong admin secret code for module delete' => sprintf(
+                '%s entered the wrong secret code while trying to delete module #%s.',
+                $actor,
+                $context['module_id'] ?? 'unknown'
+            ),
+            'Admin deleted programme' => sprintf(
+                '%s deleted programme #%s.',
+                $actor,
+                $context['programme_id'] ?? 'unknown'
+            ),
+            'Wrong admin secret code for programme delete' => sprintf(
+                '%s entered the wrong secret code while trying to delete programme #%s.',
+                $actor,
+                $context['programme_id'] ?? 'unknown'
+            ),
+            'Wrong admin secret code for staff delete or assignment' => sprintf(
+                '%s entered the wrong secret code while trying to manage staff member #%s.',
+                $actor,
+                $context['staff_id'] ?? 'unknown'
+            ),
+            'Super admin changed admin active status' => sprintf(
+                '%s changed admin #%s (%s) to %s.',
+                $actor,
+                $context['admin_id'] ?? 'unknown',
+                $context['username'] ?? 'unknown username',
+                ((int) ($context['new_status'] ?? 0)) ? 'active' : 'blocked'
+            ),
+            'Super admin hard deleted admin' => sprintf(
+                '%s permanently deleted admin #%s (%s).',
+                $actor,
+                $context['admin_id'] ?? 'unknown',
+                $context['username'] ?? 'unknown username'
+            ),
+            default => !empty($context)
+                ? sprintf('%s performed an action: %s.', $actor, $message)
+                : sprintf('%s performed an action.', $actor),
+        };
     }
 
     public function deleteLog(Request $req, Response $res): Response

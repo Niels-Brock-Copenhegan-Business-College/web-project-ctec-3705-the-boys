@@ -54,6 +54,7 @@ $pageTitle = 'Reset Password';
               <?php endif; ?>
 
               <form method="POST" action="<?= base_url('/staff/reset-password/' . rawurlencode($token)) ?>">
+                <?= csrf_field() ?>
                 <div class="mb-3">
                   <label for="password" class="form-label">New password</label>
                   <input type="password" id="password" name="password" class="form-control" minlength="6" required autofocus>

@@ -18,7 +18,7 @@ include __DIR__ . '/header.php';
 <?php if ($programme): ?>
   <!-- back Buttons -->
   <div class="prog-actions d-flex gap-2 flex-wrap">
-    <a href="<?= base_url('/admin/programmes') ?>" class="btn btn-outline-secondary">Back to Programmes</a>
+    <a href="<?= base_url('/admin/programmes') ?>" class="btn btn-outline-secondary">← Back to Programmes</a>
   </div>
   <!-- Hero Section -->
   <div class="prog-hero">
@@ -50,7 +50,7 @@ include __DIR__ . '/header.php';
 <?php endif; ?>
 
 <?php if (!empty($flash['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
+  <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
     <?= htmlspecialchars($flash['success'], ENT_QUOTES) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>

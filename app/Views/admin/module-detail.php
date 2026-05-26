@@ -10,7 +10,7 @@ include __DIR__ . '/header.php';
 
 <?php if ($module): ?>
     <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
-        <a href="<?= base_url('/admin/modules') ?>" class="btn btn-outline-secondary">Back to Modules</a>
+        <a href="<?= base_url('/admin/modules') ?>" class="btn btn-outline-secondary">← Back to Modules</a>
     </div>
     <div class="prog-hero">
         <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -49,7 +49,7 @@ include __DIR__ . '/header.php';
 <?php endif; ?>
 
 <?php if (!empty($flash['success'])): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
         <?= htmlspecialchars($flash['success'], ENT_QUOTES) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>

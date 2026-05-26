@@ -122,6 +122,16 @@ class AuthController
                 $this->pdo->prepare(
                     'UPDATE admins SET login_attempts = login_attempts + 1, locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE) WHERE id = ?'
                 )->execute([$admin['id']]);
+
+                \app_log('warning', 'Failed login attempt', [
+                    'area' => str_replace('/login', '', $path) ?: 'unified',
+                    'username' => $user,
+                    'admin_id' => (int) $admin['id'],
+                    'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                    'method' => $req->getMethod(),
+                    'path' => $path,
+                ]);
+
                 return $this->renderer->render($res, 'login.php', [
                     'error'   => 'Too many failed attempts. Your account has been locked for 15 minutes.',
                     'flash'   => [],
@@ -131,6 +141,16 @@ class AuthController
 
             $this->pdo->prepare('UPDATE admins SET login_attempts = login_attempts + 1 WHERE id = ?')
                       ->execute([$admin['id']]);
+
+            \app_log('warning', 'Failed login attempt', [
+                'area' => str_replace('/login', '', $path) ?: 'unified',
+                'username' => $user,
+                'admin_id' => (int) $admin['id'],
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                'method' => $req->getMethod(),
+                'path' => $path,
+            ]);
+
             $left = 5 - $attempts;
             return $this->renderer->render($res, 'login.php', [
                 'error'   => "Incorrect username or password. {$left} attempt(s) remaining before lockout.",
@@ -147,6 +167,15 @@ class AuthController
                 $lockedUntil = new \DateTime($staffRow['locked_until']);
                 $now = new \DateTime();
                 if ($now < $lockedUntil) {
+                    \app_log('warning', 'Failed login attempt', [
+                        'area' => str_replace('/login', '', $path) ?: 'unified',
+                        'username' => $user,
+                        'staff_id' => (int) $staffRow['id'],
+                        'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                        'method' => $req->getMethod(),
+                        'path' => $path,
+                    ]);
+
                     $diff = $now->diff($lockedUntil);
                     $remaining = ($diff->h * 60) + $diff->i + ($diff->s > 0 ? 1 : 0);
                     return $this->renderer->render($res, 'login.php', [
@@ -171,6 +200,15 @@ class AuthController
             }
 
             $attempts = (int) ($staffRow['login_attempts'] ?? 0) + 1;
+            \app_log('warning', 'Failed login attempt', [
+                'area' => str_replace('/login', '', $path) ?: 'unified',
+                'username' => $user,
+                'staff_id' => (int) $staffRow['id'],
+                'ip' => $_SERVER['REMOTE_ADDR'] ?? null,
+                'method' => $req->getMethod(),
+                'path' => $path,
+            ]);
+
             if ($attempts >= 5) {
                 $staffModel->lockAccount((int) $staffRow['id'], 15);
                 return $this->renderer->render($res, 'login.php', [

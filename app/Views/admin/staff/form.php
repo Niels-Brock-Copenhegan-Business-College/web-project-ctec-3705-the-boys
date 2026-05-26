@@ -5,6 +5,7 @@ $action = $staff ? base_url('/admin/staff/' . $staff['id']) : base_url('/admin/s
 include __DIR__ . '/../header.php';
 
 $errors = $errors ?? [];
+$photoSrc = !empty($staff['photo']) ? base_url('/uploads/staff/' . ltrim($staff['photo'], '/')) : base_url('/uploads/admin-avatar.png');
 ?>
 
 <div class="container py-5">
@@ -17,6 +18,13 @@ $errors = $errors ?? [];
             <p class="mb-3 opacity-75">Manage staff account details and login access.</p>
             <div class="rounded-3 border border-2 border-white/20 bg-dark bg-opacity-10 p-3 shadow-sm">
               <div class="small text-white-50 mb-2">Account Preview</div>
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <img src="<?= htmlspecialchars($photoSrc, ENT_QUOTES) ?>" alt="Staff photo" class="rounded-circle border border-2 border-white shadow-sm" style="width:72px; height:72px; object-fit:cover;">
+                <div class="small text-white-50">
+                  <div class="fw-semibold text-white mb-1"><?= htmlspecialchars($staff['full_name'] ?? 'New Staff Member', ENT_QUOTES) ?></div>
+                  <div><?= $staff && !empty($staff['photo']) ? 'Current profile picture' : 'No profile picture yet' ?></div>
+                </div>
+              </div>
               <div class="fw-semibold mb-1"><?= htmlspecialchars($staff['full_name'] ?? 'New Staff Member', ENT_QUOTES) ?></div>
               <div class="text-white-50 mb-3"><?= htmlspecialchars($staff['username'] ?? 'username', ENT_QUOTES) ?></div>
               <div class="d-flex flex-wrap gap-2">

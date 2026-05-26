@@ -29,7 +29,7 @@ include __DIR__ . '/../header.php';
 ?>
 
 <?php if ($staff): ?>
-  <a href="<?= base_url('/admin/staff') ?>" class="btn btn-outline-secondary mb-2">Back to Staff</a>
+  <a href="<?= base_url('/admin/staff') ?>" class="btn btn-outline-secondary mb-2">← Back to Staff</a>
   <!-- Hero Section -->
   <div class="prog-hero">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -43,11 +43,7 @@ include __DIR__ . '/../header.php';
           <?php endif; ?>
         </p>
       </div>
-      <div class="text-end">
-        <?php if (!empty($photoUrl)): ?>
-          <img src="<?= htmlspecialchars($photoUrl ?? '', ENT_QUOTES) ?>" alt="Avatar" class="rounded-circle border border-2 border-white shadow-sm" style="width:72px; height:72px; object-fit:cover;">
-        <?php endif; ?>
-      </div>
+      
     </div>
 
     <div class="prog-stats">
@@ -66,14 +62,14 @@ include __DIR__ . '/../header.php';
 <?php endif; ?>
 
 <?php if (!empty($flash['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
+  <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
     <?= htmlspecialchars($flash['success']) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
 <?php endif; ?>
 
 <?php if (!empty($flash['error'])): ?>
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <div class="alert alert-danger alert-dismissible fade show auto-dismiss" role="alert">
     <?= htmlspecialchars($flash['error']) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
@@ -82,38 +78,21 @@ include __DIR__ . '/../header.php';
 <?php if (!$staff): ?>
   <div class="alert alert-warning">Staff member not found.</div>
 <?php else: ?>
-  <!-- Actions: moved under the hero to match other admin detail pages.
-       Primary action (Edit) is visible; less-frequent or destructive actions
-       are grouped inside a dropdown to reduce clutter and accidental clicks. -->
-  <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
-    <div class="btn-group">
-      <a href="<?= base_url('/admin/staff/' . $staff['id'] . '/edit') ?>" class="btn btn-warning">Edit Staff</a>
-      <button type="button" class="btn btn-warning dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-        <span class="visually-hidden">Toggle</span>
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-        <li>
-          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/send-password-reset') ?>" class="m-0"> <?= csrf_field() ?>
-            <button type="submit" class="dropdown-item" onclick="return confirm('Send a password reset link to this staff member?')">Send password reset</button>
-          </form>
-        </li>
-        <li><hr class="dropdown-divider"></li>
-        <li>
-          <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/delete') ?>" class="m-0" onsubmit="return confirm('Delete this staff member?');">
-             <?= csrf_field() ?>
-            <button type="submit" class="dropdown-item text-danger">Delete staff</button>
-          </form>
-        </li>
-      </ul>
-    </div>
-  </div>
-
+  
   <div class="row g-4">
     <div class="col-lg-4">
       <div class="card h-100 shadow-sm">
         <div class="card-body">
           <h2 class="h5 mb-3">Profile Information</h2>
           <dl class="row mb-0">
+            <dt class="col-sm-5">Profile</dt>
+            <dd class="col-sm-7">
+              <?php if (!empty($photoUrl)): ?>
+                <img src="<?= htmlspecialchars($photoUrl ?? '', ENT_QUOTES) ?>" alt="Avatar" class="rounded-circle border border-2 border-primary shadow-sm mb-2" style="width:72px; height:72px; object-fit:cover;">
+              <?php else: ?>
+                <span class="text-muted">No profile picture</span>
+              <?php endif; ?>
+            </dd>
             <dt class="col-sm-5">Username:</dt>
             <dd class="col-sm-7"><code><?= htmlspecialchars($staff['username'] ?? 'N/A', ENT_QUOTES) ?></code></dd>
             <dt class="col-sm-5">Email:</dt>
@@ -192,7 +171,7 @@ include __DIR__ . '/../header.php';
               <div id="collapseModule" class="accordion-collapse collapse show" aria-labelledby="headingModule" data-bs-parent="#assignAccordion">
                 <div class="accordion-body pt-4">
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/assign-module') ?>">
-                     <?= csrf_field() ?>
+                    <?= csrf_field() ?>
                     <?php if (empty($unassignedModules)): ?>
                       <div class="alert alert-info mb-0">No modules are available to assign.</div>
                     <?php else: ?>
@@ -249,7 +228,7 @@ include __DIR__ . '/../header.php';
               <div id="collapseProgramme" class="accordion-collapse collapse" aria-labelledby="headingProgramme" data-bs-parent="#assignAccordion">
                 <div class="accordion-body pt-4">
                   <form method="POST" action="<?= base_url('/admin/staff/' . $staff['id'] . '/assign-programme') ?>">
-                     <?= csrf_field() ?>
+                    <?= csrf_field() ?>
                     <?php if (empty($unassignedProgrammes)): ?>
                       <div class="alert alert-info mb-0">No programmes are available to assign.</div>
                     <?php else: ?>

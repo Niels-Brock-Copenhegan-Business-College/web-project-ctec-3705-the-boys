@@ -13,6 +13,7 @@ foreach ($staff as $member) {
 }
 $inactiveStaff = $totalStaff - $activeStaff;
 ?>
+<a href="<?= base_url('/admin') ?>" class="btn btn-outline-secondary mb-2">Back to dashboard</a>
 
 <div class="prog-hero">
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -41,14 +42,14 @@ $inactiveStaff = $totalStaff - $activeStaff;
 </div>
 
 <?php if (!empty($flash['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
+  <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 auto-dismiss" role="alert">
     <?= htmlspecialchars($flash['success']) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
 <?php endif; ?>
 
 <?php if (!empty($flash['error'])): ?>
-  <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
+  <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 auto-dismiss" role="alert">
     <?= htmlspecialchars($flash['error']) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
@@ -61,16 +62,15 @@ $inactiveStaff = $totalStaff - $activeStaff;
         <div class="alert alert-info mb-0">No staff members found.</div>
       </div>
     <?php else: ?>
-   <div class = "container ">
-      <div class="table-responsive ">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light-info">
+      
+        <table class="table table-hover align-middle mb-0" id="staffTable">
+          <thead class="table-light">
             <tr>
               <th class="ps-4">Full Name</th>
               <th>Role</th>
               <th>Status</th>
               <th>Created</th>
-              <th class="text-end pe-4">Actions</th>
+              <th class="text-end pe-4" style="width: 220px;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -84,7 +84,7 @@ $inactiveStaff = $totalStaff - $activeStaff;
                 };
                 $statusBadge = !empty($s['is_active']) ? 'text-bg-success' : 'text-bg-secondary';
               ?>
-              <tr>
+              <tr class="module-row">
                 <td class="ps-4">
                   <div class="fw-semibold">
                     <a href="<?= base_url('/admin/staff/' . $s['id']) ?>" class="text-decoration-none text-dark">
@@ -104,8 +104,8 @@ $inactiveStaff = $totalStaff - $activeStaff;
                 <td>
                   <div class="small text-muted"><?= date('d M Y', strtotime($s['created_at'])) ?></div>
                 </td>
-                <td class="text-end pe-4">
-                  <div class="btn-group">
+                <td class="text-end pe-4 text-nowrap">
+                  <div class="btn-group flex-nowrap">
                     <a href="<?= base_url('/admin/staff/' . $s['id']) ?>" class="btn btn-sm btn-outline-secondary">View</a>
                     <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                       <span class="visually-hidden">Toggle dropdown</span>
@@ -114,6 +114,7 @@ $inactiveStaff = $totalStaff - $activeStaff;
                       <li><a class="dropdown-item" href="<?= base_url('/admin/staff/' . $s['id'] . '/edit') ?>">Edit staff</a></li>
                       <li>
                         <form method="POST" action="<?= base_url('/admin/staff/' . $s['id'] . '/send-password-reset') ?>" class="m-0">
+                          <?= csrf_field() ?>
                           <button type="submit" class="dropdown-item" onclick="return confirm('Send a password reset link to this staff member?');">Send reset link</button>
                         </form>
                       </li>
@@ -135,8 +136,7 @@ $inactiveStaff = $totalStaff - $activeStaff;
             <?php endforeach; ?>
           </tbody>
         </table>
-      </div>
-      </div>
+    
     <?php endif; ?>
   </div>
 </div>

@@ -21,7 +21,7 @@ foreach ($programmes as $programme) {
 }
 sort($levels);
 ?>
-
+<a href="<?= base_url('/admin') ?>" class="btn btn-outline-secondary mb-3">← Back to dashboard</a>
 <!-- Hero -->
 <div class="mb-4 prog-hero">
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -79,7 +79,7 @@ sort($levels);
 
 <!-- Flash messages -->
 <?php if (!empty($flash['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+  <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert" aria-live="polite">
     <?= htmlspecialchars($flash['success'], ENT_QUOTES) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
@@ -121,7 +121,7 @@ sort($levels);
                     <span class="visually-hidden">Toggle</span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li><a class="dropdown-item" href="<?= base_url('/admin/interests/' . $p['id']) ?>">Interests</a></li>
+                    <li><a class="dropdown-item" href="<?= base_url('/admin/interests/' . $p['id']) ?>">Interested Students</a></li>
                     <li><a class="dropdown-item" href="<?= base_url('/admin/programmes/' . $p['id'] . '/edit') ?>">Edit</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
@@ -148,6 +148,7 @@ sort($levels);
 
 <script id="admin-programmes-js"
         src="<?= base_url('/js/admin-programmes.js') ?>"
-        data-publish-url-base="<?= base_url('/admin/programmes') ?>"></script>
+  data-publish-url-base="<?= base_url('/admin/programmes') ?>"
+  data-csrf-token="<?= htmlspecialchars(csrf_token(), ENT_QUOTES) ?>"></script>
 
 <?php include __DIR__ . '/footer.php'; ?>

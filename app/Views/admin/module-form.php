@@ -32,7 +32,8 @@ include __DIR__ . '/header.php';
           </div>
 
           <div class="col-md-7 p-4 bg-white">
-            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">  <?= csrf_field() ?>
+            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+              <?= csrf_field() ?>
               <div class="mb-3">
                 <label for="title" class="form-label fw-semibold">Module Title</label>
                 <input id="title" type="text" name="title" class="form-control form-control-lg shadow-sm" required

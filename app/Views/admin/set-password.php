@@ -17,8 +17,8 @@ $success = $success ?? false;
 <div class="container"><div class="row justify-content-center"><div class="col-12 col-md-6">
     <h3 class="mb-3">Set your admin password & secret code</h3>
 
-    <?php if ($error): ?><div class="alert alert-danger"><?= htmlspecialchars($error, ENT_QUOTES) ?></div><?php endif; ?>
-    <?php if ($success): ?><div class="alert alert-success">Your password and secret code have been set. You can now <a href="<?= base_url('/admin/login') ?>">sign in</a>.</div><?php endif; ?>
+    <?php if ($error): ?><div class="alert alert-danger auto-dismiss"><?= htmlspecialchars($error, ENT_QUOTES) ?></div><?php endif; ?>
+    <?php if ($success): ?><div class="alert alert-success auto-dismiss">Your password and secret code have been set. You can now <a href="<?= base_url('/admin/login') ?>">sign in</a>.</div><?php endif; ?>
 
     <?php if (!$success): ?>
     <form method="POST" action="<?= base_url('/admin/set-password/' . rawurlencode($token)) ?>">
@@ -44,5 +44,10 @@ $success = $success ?? false;
     <?php endif; ?>
 
 </div></div></div>
+<script>
+    window.APP_BASE_URL = '<?= rtrim(base_url(), "/") ?>';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('/js/main.js') ?>"></script>
 </body>
 </html>
