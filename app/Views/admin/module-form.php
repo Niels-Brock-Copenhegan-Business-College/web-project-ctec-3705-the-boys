@@ -32,7 +32,7 @@ include __DIR__ . '/header.php';
           </div>
 
           <div class="col-md-7 p-4 bg-white">
-            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">  <?= csrf_field() ?>
               <div class="mb-3">
                 <label for="title" class="form-label fw-semibold">Module Title</label>
                 <input id="title" type="text" name="title" class="form-control form-control-lg shadow-sm" required
@@ -45,6 +45,15 @@ include __DIR__ . '/header.php';
 
               </div>
 
+              <div class="mb-3">
+    <label for="credits" class="form-label">Credits</label>
+    <select name="credits" id="credits" class="form-select">
+        <option value="10"  <?= ($module['credits'] ?? 20) == 10  ? 'selected' : '' ?>>10 credits</option>
+        <option value="20"  <?= ($module['credits'] ?? 20) == 20  ? 'selected' : '' ?>>20 credits</option>
+        <option value="30"  <?= ($module['credits'] ?? 20) == 30  ? 'selected' : '' ?>>30 credits</option>
+        <option value="40"  <?= ($module['credits'] ?? 20) == 40  ? 'selected' : '' ?>>40 credits</option>
+    </select>
+</div>
               <div class="mb-3">
                 <label for="photo" class="form-label">Upload image</label>
                 <input id="photo" type="file" name="photo" accept="image/*" class="form-control">

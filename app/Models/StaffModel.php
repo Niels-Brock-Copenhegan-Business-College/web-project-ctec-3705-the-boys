@@ -245,24 +245,31 @@ public function resetLoginAttempts(int $id): void
 
     // ── Programme assignments ─────────────────────────────────────
 
-    public function getAssignedProgrammes(int $staffId): array
-    {
-        $stmt = $this->pdo->prepare(
-            'SELECT p.*,
-                    (SELECT COUNT(*) FROM programme_modules pm WHERE pm.programme_id = p.id)        AS module_count,
-                    (SELECT COUNT(*) FROM interest_registrations ir WHERE ir.programme_id = p.id)   AS interest_count,
-                    (SELECT COUNT(*) FROM staff_programmes sp2 WHERE sp2.programme_id = p.id)       AS team_count,
-                    (SELECT COUNT(*) FROM staff_modules sm
-                     JOIN programme_modules pm ON pm.module_id = sm.module_id
-                     WHERE pm.programme_id = p.id AND sm.staff_id = ?)                              AS my_module_count
-             FROM programmes p
-             JOIN staff_programmes sp ON sp.programme_id = p.id
-             WHERE sp.staff_id = ?
-             ORDER BY p.level ASC, p.title ASC'
-        );
-        $stmt->execute([$staffId, $staffId]);
-        return $stmt->fetchAll();
-    }
+ public function getAssignedProgrammes(int $staffId): array
+{
+    $stmt = $this->pdo->prepare(
+        'SELECT p.*,
+                (SELECT COUNT(*) FROM programme_modules pm WHERE pm.programme_id = p.id)        AS module_count,
+                (SELECT COUNT(*) FROM interest_registrations ir WHERE ir.programme_id = p.id)   AS interest_count,
+                (
+                    SELECT COUNT(DISTINCT s2.id)
+                    FROM staff s2
+                    LEFT JOIN staff_programmes sp2 ON sp2.staff_id = s2.id AND sp2.programme_id = p.id
+                    LEFT JOIN staff_modules sm2 ON sm2.staff_id = s2.id
+                    LEFT JOIN programme_modules pm2 ON pm2.module_id = sm2.module_id AND pm2.programme_id = p.id
+                    WHERE sp2.staff_id IS NOT NULL OR pm2.programme_id IS NOT NULL
+                )                                                                                AS team_count,
+                (SELECT COUNT(*) FROM staff_modules sm
+                 JOIN programme_modules pm ON pm.module_id = sm.module_id
+                 WHERE pm.programme_id = p.id AND sm.staff_id = ?)                              AS my_module_count
+         FROM programmes p
+         JOIN staff_programmes sp ON sp.programme_id = p.id
+         WHERE sp.staff_id = ?
+         ORDER BY p.level ASC, p.title ASC'
+    );
+    $stmt->execute([$staffId, $staffId]);
+    return $stmt->fetchAll();
+}
 
     /**
      * Full programme detail for staff view.
@@ -274,16 +281,28 @@ public function resetLoginAttempts(int $id): void
         $programme = $stmt->fetch();
         if (!$programme) return null;
 
-        // Staff team (no role column — just list them)
-        $stmt = $this->pdo->prepare(
-            'SELECT s.id, s.full_name, s.email, s.role AS staff_role
-             FROM staff s
-             JOIN staff_programmes sp ON sp.staff_id = s.id
-             WHERE sp.programme_id = ?
-             ORDER BY s.full_name ASC'
-        );
-        $stmt->execute([$programmeId]);
-        $programme['staff'] = $stmt->fetchAll();
+       // Staff team — deduplicated by id, source just tells us how they're linked
+$stmt = $this->pdo->prepare(
+    'SELECT s.id, s.full_name, s.email, s.photo, s.role AS staff_role,
+            CASE
+                WHEN sp.staff_id IS NOT NULL AND sm_check.staff_id IS NOT NULL THEN "both"
+                WHEN sp.staff_id IS NOT NULL THEN "programme"
+                ELSE "module"
+            END AS source
+     FROM staff s
+     LEFT JOIN staff_programmes sp
+           ON sp.staff_id = s.id AND sp.programme_id = ?
+     LEFT JOIN (
+         SELECT DISTINCT sm.staff_id
+         FROM staff_modules sm
+         JOIN programme_modules pm ON pm.module_id = sm.module_id
+         WHERE pm.programme_id = ?
+     ) sm_check ON sm_check.staff_id = s.id
+     WHERE sp.staff_id IS NOT NULL OR sm_check.staff_id IS NOT NULL
+     ORDER BY s.full_name ASC'
+);
+$stmt->execute([$programmeId, $programmeId]);
+$programme['staff'] = $stmt->fetchAll();
 
         // Modules grouped by year
         $stmt = $this->pdo->prepare(

@@ -110,7 +110,7 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                 <?php endif; ?>
             </div>
             <h1 class="prog-hero__title"><?= htmlspecialchars($programme['title'] ?? '', ENT_QUOTES) ?></h1>
-            <p class="prog-hero__desc"><?= htmlspecialchars($programme['description'] ?? '', ENT_QUOTES) ?></p>
+           <p class="prog-hero__desc" style="text-align:justify;"><?= htmlspecialchars($programme['description'] ?? '', ENT_QUOTES) ?></p>
             <div class="prog-hero__stats">
                 <div>
                     <div class="prog-hero__stat-n"><?= $totalModules ?></div>
@@ -217,26 +217,49 @@ $totalModules = array_sum(array_map('count', $programme['modulesByYear']));
                     </div>
                 <?php else: ?>
                     <?php foreach ($programme['staff'] as $s): ?>
-                        <div class="staff-person-row">
-                            <div class="staff-person-avatar" aria-hidden="true">
-                                <?= mb_strtoupper(mb_substr($s['full_name'] ?? 'S', 0, 1)) ?>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="staff-person-name">
-                                    <?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>
-                                    <?php if ((int)$s['id'] === (int)($_SESSION['staff_id'] ?? 0)): ?>
-                                        <span class="staff-badge staff-badge--contributor ms-1">You</span>
-                                    <?php endif; ?>
-                                </div>
-                                <div class="staff-person-email">
-                                    <?= htmlspecialchars($s['email'], ENT_QUOTES) ?>
-                                </div>
-                            </div>
-                            <span class="staff-role-badge staff-role-<?= htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES) ?>">
-                                <?= ucfirst(htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES)) ?>
-                            </span>
-                        </div>
-                    <?php endforeach; ?>
+    <div class="staff-person-row">
+
+        <!-- Avatar with photo support -->
+        <div class="staff-person-avatar <?= !empty($s['photo']) ? 'staff-person-avatar--photo' : '' ?>"
+             aria-hidden="true">
+            <?php if (!empty($s['photo'])): ?>
+                <img src="<?= base_url('/uploads/staff/' . htmlspecialchars($s['photo'], ENT_QUOTES)) ?>"
+                     alt="<?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>">
+            <?php else: ?>
+                <?= mb_strtoupper(mb_substr($s['full_name'] ?? 'S', 0, 1)) ?>
+            <?php endif; ?>
+        </div>
+
+        <!-- Name + source subtitle -->
+        <div class="flex-grow-1" style="min-width:0;">
+            <div class="staff-person-name">
+                <?= htmlspecialchars($s['full_name'], ENT_QUOTES) ?>
+                <?php if ((int)$s['id'] === (int)($_SESSION['staff_id'] ?? 0)): ?>
+                    <span class="staff-badge staff-badge--contributor ms-1">You</span>
+                <?php endif; ?>
+            </div>
+            <div class="staff-person-email">
+                <?= htmlspecialchars($s['email'], ENT_QUOTES) ?>
+            </div>
+            <?php
+                $sourceLabel = match($s['source'] ?? 'programme') {
+                    'both'      => 'Programme & module staff',
+                    'module'    => 'Module staff',
+                    default     => 'Programme staff',
+                };
+            ?>
+            <div style="font-size:.7rem;color:#94a3b8;margin-top:2px;">
+                <?= $sourceLabel ?>
+            </div>
+        </div>
+
+        <!-- Role badge only — no duplicate source badge -->
+        <span class="staff-role-badge staff-role-<?= htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES) ?> flex-shrink-0">
+            <?= ucfirst(htmlspecialchars($s['staff_role'] ?? 'instructor', ENT_QUOTES)) ?>
+        </span>
+
+    </div>
+<?php endforeach; ?>
                 <?php endif; ?>
             </div>
 
