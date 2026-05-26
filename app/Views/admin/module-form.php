@@ -42,6 +42,7 @@ include __DIR__ . '/header.php';
               <div class="mb-3 mt-3">
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description" name="description" class="form-control" rows="5" required><?= htmlspecialchars($module['description'] ?? '', ENT_QUOTES) ?></textarea>
+
               </div>
 
               <div class="mb-3">
