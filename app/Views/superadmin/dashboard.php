@@ -61,7 +61,7 @@ $blockedAdmins = $totalAdmins - $activeAdmins;
             <div>
                 <div class="text-uppercase text-primary fw-semibold small mb-2">Superadmin Control Center</div>
                 <h1 class="display-6 fw-bold mb-2">Admin management dashboard</h1>
-                <p class="text-muted mb-0">Create, block, and permanently remove admin accounts from one place.</p>
+                
             </div>
             <div class="d-flex flex-wrap gap-2">
                 <a href="<?= base_url('/superadmin/logs') ?>" class="btn btn-outline-dark">View logs</a>
@@ -72,10 +72,10 @@ $blockedAdmins = $totalAdmins - $activeAdmins;
     </div>
 
     <?php if (!empty($flash['success'])): ?>
-        <div class="alert alert-success shadow-sm border-0"><?= htmlspecialchars($flash['success'], ENT_QUOTES) ?></div>
+        <div class="alert alert-success shadow-sm border-0 auto-dismiss"><?= htmlspecialchars($flash['success'], ENT_QUOTES) ?></div>
     <?php endif; ?>
     <?php if (!empty($flash['error'])): ?>
-        <div class="alert alert-danger shadow-sm border-0"><?= htmlspecialchars($flash['error'], ENT_QUOTES) ?></div>
+        <div class="alert alert-danger shadow-sm border-0 auto-dismiss" ><?= htmlspecialchars($flash['error'], ENT_QUOTES) ?></div>
     <?php endif; ?>
 
     <div class="row g-3 mb-4">
@@ -169,5 +169,10 @@ $blockedAdmins = $totalAdmins - $activeAdmins;
         </div>
     </div>
 </div>
+<script>
+    window.APP_BASE_URL = '<?= rtrim(base_url(), "/") ?>';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('/js/main.js') ?>"></script>
 </body>
 </html>

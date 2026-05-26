@@ -22,6 +22,7 @@ $success = $success ?? false;
 
     <?php if (!$success): ?>
     <form method="POST" action="<?= base_url('/admin/set-password/' . rawurlencode($token)) ?>">
+        <?= csrf_field() ?>
         <div class="mb-3">
             <label class="form-label">New password</label>
             <input name="password" type="password" class="form-control" required>

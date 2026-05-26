@@ -15,6 +15,13 @@ class SuperAdminController
         private array $mailConfig = []
     ) {}
 
+    private function getFlash(): array
+    {
+        $flash = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+        return $flash;
+    }
+
     public function loginForm(Request $req, Response $res): Response
     {
         if (!empty($_SESSION['superadmin_id'])) {
@@ -64,16 +71,14 @@ class SuperAdminController
         $admins = $stmt->fetchAll();
         return $this->renderer->render($res, 'superadmin/dashboard.php', [
             'admins' => $admins,
-            'flash' => $_SESSION['flash'] ?? [],
+            'flash' => $this->getFlash(),
         ]);
     }
 
     public function showCreateAdminForm(Request $req, Response $res): Response
     {
-        $flash = $_SESSION['flash'] ?? [];
-        unset($_SESSION['flash']);
         return $this->renderer->render($res, 'superadmin/create_admin.php', [
-            'flash' => $flash,
+            'flash' => $this->getFlash(),
             'errors' => [],
             'old' => [],
         ]);
@@ -90,6 +95,14 @@ class SuperAdminController
         if ($username === '') $errors[] = 'Username is required.';
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'A valid email is required.';
 
+        if ($username !== '') {
+            $stmt = $this->pdo->prepare('SELECT id FROM admins WHERE username = ? LIMIT 1');
+            $stmt->execute([$username]);
+            if ($stmt->fetch()) {
+                $errors[] = 'That username is already taken. Please choose another one.';
+            }
+        }
+
         if (!empty($errors)) {
             return $this->renderer->render($res, 'superadmin/create_admin.php', [
                 'flash' => [],
@@ -98,23 +111,33 @@ class SuperAdminController
             ]);
         }
 
-        // Create admin with empty password_hash (admin will set password via emailed link)
-        $stmt = $this->pdo->prepare('INSERT INTO admins (username, password_hash, is_active) VALUES (?, ?, 1)');
-        $stmt->execute([$username, '']);
-        $adminId = (int) $this->pdo->lastInsertId();
-
-        // Create invite token
-        $token = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $token);
-        $expiresAt = (new \DateTimeImmutable('+2 hours'))->format('Y-m-d H:i:s');
-        $createBy = (int) ($_SESSION['superadmin_id'] ?? 0);
-        $stmt = $this->pdo->prepare('INSERT INTO admin_password_resets (admin_id, token_hash, created_by, expires_at) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$adminId, $tokenHash, $createBy, $expiresAt]);
-
-        // Send invite email (best-effort)
         try {
+            // Create admin with empty password_hash (admin will set password via emailed link)
+            $stmt = $this->pdo->prepare('INSERT INTO admins (username, password_hash, is_active) VALUES (?, ?, 1)');
+            $stmt->execute([$username, '']);
+            $adminId = (int) $this->pdo->lastInsertId();
+
+            // Create invite token
+            $token = bin2hex(random_bytes(32));
+            $tokenHash = hash('sha256', $token);
+            $expiresAt = (new \DateTimeImmutable('+2 hours'))->format('Y-m-d H:i:s');
+            $createBy = (int) ($_SESSION['superadmin_id'] ?? 0);
+            $stmt = $this->pdo->prepare('INSERT INTO admin_password_resets (admin_id, token_hash, created_by, expires_at) VALUES (?, ?, ?, ?)');
+            $stmt->execute([$adminId, $tokenHash, $createBy, $expiresAt]);
+
+            // Send invite email
             $this->sendAdminInviteEmail($email, $username, $name, $token, $expiresAt);
             $_SESSION['flash']['success'] = 'Admin created and invite email sent.';
+        } catch (\PDOException $e) {
+            if ((string) $e->getCode() === '23000' || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                return $this->renderer->render($res, 'superadmin/create_admin.php', [
+                    'flash' => [],
+                    'errors' => ['That username is already taken. Please choose another one.'],
+                    'old' => ['username' => $username, 'email' => $email, 'name' => $name],
+                ]);
+            }
+
+            $_SESSION['flash']['error'] = 'Admin could not be created. Please try again.';
         } catch (\Throwable $e) {
             $_SESSION['flash']['error'] = 'Admin created but unable to send invite email.';
         }
@@ -174,6 +197,7 @@ class SuperAdminController
 
         $this->pdo->beginTransaction();
         try {
+            $this->pdo->prepare('DELETE FROM staff WHERE created_by = ?')->execute([$adminId]);
             $this->pdo->prepare('DELETE FROM admin_password_resets WHERE admin_id = ?')->execute([$adminId]);
             $this->pdo->prepare('DELETE FROM admins WHERE id = ?')->execute([$adminId]);
             $this->pdo->commit();

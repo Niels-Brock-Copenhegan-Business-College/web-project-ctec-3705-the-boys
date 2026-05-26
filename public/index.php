@@ -47,6 +47,22 @@ $pdo = new PDO($dsn, $dbConfig['user'], $dbConfig['pass'], [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ]);
 
+try {
+    $columnStmt = $pdo->prepare(
+        "SELECT IS_NULLABLE, COLUMN_DEFAULT
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'modules' AND COLUMN_NAME = 'year_of_study'"
+    );
+    $columnStmt->execute([$dbConfig['dbname']]);
+    $moduleYearColumn = $columnStmt->fetch();
+
+    if ($moduleYearColumn && ($moduleYearColumn['IS_NULLABLE'] !== 'YES' || $moduleYearColumn['COLUMN_DEFAULT'] !== null)) {
+        $pdo->exec('ALTER TABLE modules MODIFY year_of_study tinyint(3) UNSIGNED NULL DEFAULT NULL');
+    }
+} catch (Throwable $e) {
+    error_log('Unable to adjust modules.year_of_study schema: ' . $e->getMessage());
+}
+
 // make PDO available to helper logger
 $GLOBALS['app_pdo'] = $pdo;
 

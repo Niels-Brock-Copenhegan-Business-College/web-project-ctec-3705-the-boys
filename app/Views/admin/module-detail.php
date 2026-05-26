@@ -58,18 +58,7 @@ include __DIR__ . '/header.php';
 <?php if (!$module): ?>
     <div class="alert alert-warning">Module not found.</div>
 <?php else: ?>
-<<<<<<< HEAD
     
-=======
-    <div class="prog-actions d-flex gap-2 flex-wrap mb-3">
-        <a href="<?= base_url('/admin/modules/' . $module['id'] . '/edit') ?>" class="btn btn-warning">Edit Module</a>
-        <form method="POST" action="<?= base_url('/admin/modules/' . $module['id'] . '/delete') ?>" class="d-inline" onsubmit="return confirm('Delete this module?');">  <?= csrf_field() ?>
-            <button type="submit" class="btn btn-outline-danger">Delete Module</button>
-        </form>
-        <a href="<?= base_url('/admin/modules') ?>" class="btn btn-outline-secondary">Back to Modules</a>
-    </div>
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
-
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="card h-100 shadow-sm">

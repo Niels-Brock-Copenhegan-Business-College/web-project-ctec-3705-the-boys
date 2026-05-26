@@ -59,9 +59,6 @@ include __DIR__ . '/header.php';
 <?php if (!$programme): ?>
   <div class="alert alert-warning">Programme not found.</div>
 <?php else: ?>
-<<<<<<< HEAD
-  
-=======
   <!-- Action Buttons -->
   <div class="prog-actions d-flex gap-2 flex-wrap">
     <a href="<?= base_url('/admin/programmes/' . $programme['id'] . '/edit') ?>" class="btn btn-warning">Edit Programme</a>
@@ -71,7 +68,6 @@ include __DIR__ . '/header.php';
     <a href="<?= base_url('/admin/programmes') ?>" class="btn btn-outline-secondary">Back to Programmes</a>
   </div>
 
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
   <div class="row g-4">
     <div class="col-lg-4">
       <div class="card h-100 shadow-sm">
@@ -176,6 +172,7 @@ include __DIR__ . '/header.php';
                             <h5 class="h6 fw-bold mb-2"><?= htmlspecialchars($module['title'] ?? '', ENT_QUOTES) ?></h5>
                             <p class="mb-3 text-muted"><?= htmlspecialchars($module['description'] ?? '', ENT_QUOTES) ?></p>
                             <form method="POST" action="<?= base_url('/admin/programmes/' . $programme['id'] . '/unassign-module') ?>" class="m-0">
+                              <?= csrf_field() ?>
                               <input type="hidden" name="module_id" value="<?= (int) $module['id'] ?>">
                               <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Remove this module from the programme?')">Remove</button>
                             </form>
@@ -192,7 +189,8 @@ include __DIR__ . '/header.php';
                     <?php if (empty($availableModules)): ?>
                       <div class="alert alert-info mb-0">All modules are already assigned to this programme.</div>
                     <?php else: ?>
-                      <form method="POST" action="<?= base_url('/admin/programmes/' . $programme['id'] . '/assign-module') ?>" class="row g-3 align-items-end">
+                      <form method="POST" action="<?= base_url('/admin/programmes/' . $programme['id'] . '/assign-module') ?>" class="row g-3 align-items-end"> 
+                        <?= csrf_field() ?>
                         <input type="hidden" name="year_of_study" value="<?= (int) $year ?>">
                         <div class="col-md-8">
                           <label for="module_id_<?= (int) $year ?>" class="form-label">Select a module</label>

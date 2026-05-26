@@ -70,6 +70,7 @@ class ModuleController
         $this->model->create([
             'title'       => $this->clean($d['title'] ?? ''),
             'description' => $this->clean($d['description'] ?? ''),
+            'credits'     => (int)($d['credits'] ?? 20),
             'photo'       => $photoFile,
         ]);
         $this->flash('success', 'Module created.');
@@ -159,7 +160,10 @@ class ModuleController
 
         $adminModel = new \App\Models\AdminModel($this->pdo);
         if ($adminModel->verifySecretCode($adminId, $secretCode)) {
-            $res->getBody()->write(json_encode(['success' => true]));
+            $res->getBody()->write(json_encode([
+                'success' => true,
+                'csrf_token' => csrf_token(),
+            ]));
             return $res->withHeader('Content-Type', 'application/json');
         }
 
