@@ -129,6 +129,7 @@ $app->get('/programmes/{id:[0-9]+}', [$progCtrl, 'detail']);
 $app->get('/interest/register/{id:[0-9]+}', [$interestCtrl, 'showForm']);
 $app->post('/interest', [$interestCtrl, 'register']);
 $app->get('/interest/withdraw/{token}', [$interestCtrl, 'withdraw']);
+$app->post('/interest/withdraw/{token}', [$interestCtrl, 'withdraw']);
 $app->get('/my-interests',            [$interestCtrl, 'myInterestsForm']);
 $app->post('/my-interests',           [$interestCtrl, 'myInterestsLookup']);
 $app->post('/my-interests/withdraw',  [$interestCtrl, 'myInterestsWithdraw']);

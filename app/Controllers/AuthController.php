@@ -302,15 +302,19 @@ class AuthController
             $mailer->isHTML(false);
             $mailer->Subject = 'Your UniHub interest registrations';
 
-            $lines = ["Hi,\n\nHere's a summary of your registered interests on UniHub:\n"];
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+            $base = $scheme . '://' . $host;
+
+            $lines = ["Hi,\n\nYour UniHub interest summary:\n"];
             foreach ($registrations as $r) {
                 $lines[] = '• ' . ($r['programme_title'] ?? 'Programme') . ' — registered ' . date('j F Y', strtotime($r['registered_at']));
                 if (!empty($r['withdraw_token'])) {
-                    $lines[] = '  Withdraw: ' . base_url('/interest/withdraw/' . $r['withdraw_token']);
+                    $lines[] = '  Withdraw: ' . $base . base_url('/interest/withdraw/' . $r['withdraw_token']);
                 }
             }
-            $lines[] = "\nTo explore more programmes, visit: " . base_url('/');
-            $lines[] = "\nRegards,\nThe UniHub Team";
+            $lines[] = "\nBrowse programmes: " . $base . base_url('/');
+            $lines[] = "\nRegards,\nUniHub";
 
             $mailer->Body = implode("\n", $lines);
             $mailer->send();
