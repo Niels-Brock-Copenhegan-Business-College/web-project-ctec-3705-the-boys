@@ -94,7 +94,7 @@ include __DIR__ . '/header.php';
 <!-- Students by Program -->
 <?php if (!empty($programs)): ?>
   <div class="mb-4">
-    <h5 class="mb-3">Students by Program</h5>
+    <h5 class="mb-3">Registered Students by Program</h5>
     <div class="row g-3">
       <?php foreach ($programs as $prog):
         if (is_array($prog)) {
@@ -115,7 +115,7 @@ include __DIR__ . '/header.php';
                 <p class="mb-0 fw-bold"><?= $pCount ?> students</p>
               </div>
               <div class="text-end">
-                <a href="<?= $pId ? base_url('/admin/interests/' . $pId) : base_url('/admin/interests') ?>" class="btn btn-sm btn-outline-primary">View</a>
+                <a title="View students list" href="<?= $pId ? base_url('/admin/interests/' . $pId) : base_url('/admin/interests') ?>" class="btn btn-sm btn-outline-primary">View</a>
               </div>
             </div>
           </div>
@@ -126,18 +126,7 @@ include __DIR__ . '/header.php';
 <?php endif; ?>
 
 <div class="row g-3">
-  <div class="col-lg-8">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Recent Activity</h5>
-        <div class="recent-activity mt-3">
-          <ul class="list-group list-group-flush">
-            <li class="list-group-item">No recent activity to show.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+  
   <div class="col-lg-4">
     <div class="card quick-actions">
       <div class="card-body">

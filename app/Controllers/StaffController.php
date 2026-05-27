@@ -146,16 +146,32 @@ class StaffController
         if (!$staff) return $res->withStatus(404);
 
         $d               = $req->getParsedBody();
+        $uploadedFiles    = $req->getUploadedFiles();
         $errors          = [];
         $email           = $this->clean($d['email'] ?? '');
         $fullName        = $this->clean($d['full_name'] ?? '');
         $password        = $d['password'] ?? '';
         $confirmPassword = $d['confirm_password'] ?? '';
+        $photoFile       = $uploadedFiles['photo'] ?? null;
+        $newPhoto        = $staff['photo'] ?? null;
 
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors['email']    = 'Valid email is required.';
         if (!$fullName)                                             $errors['full_name'] = 'Full name is required.';
         if ($password && strlen($password) < 6)                    $errors['password']  = 'Password must be at least 6 characters.';
         if ($password && $password !== $confirmPassword)            $errors['confirm_password'] = 'Passwords do not match.';
+
+        if ($photoFile && $photoFile->getError() !== UPLOAD_ERR_NO_FILE && $photoFile->getError() !== UPLOAD_ERR_OK) {
+            $errors['photo'] = 'Unable to upload the profile picture.';
+        }
+
+        if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
+            $mediaType = $photoFile->getClientMediaType();
+            if (!in_array($mediaType, ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], true)) {
+                $errors['photo'] = 'Only JPG, PNG, WEBP or GIF images are allowed.';
+            } elseif ($photoFile->getSize() > 3 * 1024 * 1024) {
+                $errors['photo'] = 'Photo must be under 3 MB.';
+            }
+        }
 
         if (!empty($errors)) {
             return $this->renderer->render($res, 'admin/staff/form.php', [
@@ -170,6 +186,34 @@ class StaffController
             'is_active' => isset($d['is_active']) ? 1 : 0,
         ];
         if ($password) $updateData['password'] = $password;
+
+        if ($photoFile && $photoFile->getError() === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../../public/uploads/staff/';
+            if (!is_dir($uploadDir)) {
+                @mkdir($uploadDir, 0775, true);
+            }
+
+            $ext = strtolower(pathinfo($photoFile->getClientFilename(), PATHINFO_EXTENSION));
+            if ($ext === '') {
+                $ext = 'jpg';
+            }
+
+            $filename = 'staff_' . $staffId . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            $photoFile->moveTo($uploadDir . $filename);
+
+            if (!empty($staff['photo'])) {
+                $oldPhoto = $uploadDir . $staff['photo'];
+                if (is_file($oldPhoto)) {
+                    @unlink($oldPhoto);
+                }
+            }
+
+            $newPhoto = $filename;
+        }
+
+        if ($newPhoto !== null) {
+            $updateData['photo'] = $newPhoto;
+        }
 
         $this->staffModel->update($staffId, $updateData);
         $this->flash('success', 'Staff member updated successfully.');

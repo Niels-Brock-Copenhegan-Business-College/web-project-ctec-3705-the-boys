@@ -32,6 +32,13 @@ class InterestController
         return trim((string) $value);
     }
 
+    private function absoluteUrl(string $path): string
+    {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        return $scheme . '://' . $host . base_url($path);
+    }
+
     private function sendEmail(array $to, string $subject, string $body, bool $useBcc = false): void
     {
         $cfg = $this->mailConfig;
@@ -145,21 +152,20 @@ class InterestController
             ]);
         }
 
-        $registered = $this->model->register([
+        $registration = $this->model->register([
             'first_name'   => $firstName,
             'last_name'    => $lastName,
             'email'        => $email,
             'programme_id' => $progId,
         ]);
 
-        if ($registered && $prog) {
+        if ($registration && $prog) {
             $programmeName = $prog['title'] ?? 'the programme';
+            $withdrawLink = $this->absoluteUrl('/interest/withdraw/' . ($registration['withdraw_token'] ?? ''));
             $body  = "Hi {$firstName},\n\n";
-            $body .= "Thank you for registering your interest in \"{$programmeName}\" at UniHub University.\n\n";
-            $body .= "We will keep you updated about open days, application deadlines, and any programme news.\n\n";
-            $body .= "You can view or withdraw your interest at any time by visiting:\n";
-            $body .= base_url('/my-interests') . "\n\n";
-            $body .= "Regards,\nThe UniHub Admissions Team";
+            $body .= "Your interest in \"{$programmeName}\" is confirmed.\n";
+            $body .= "Withdraw here: {$withdrawLink}\n\n";
+            $body .= "Regards,\nUniHub Admissions";
 
             try {
                 $this->sendEmail([$email], 'Interest confirmed - ' . $programmeName, $body);
@@ -170,15 +176,30 @@ class InterestController
 
         return $this->renderer->render($res, 'student/register-interest.php', [
             'prog'    => $prog,
-            'errors'  => $registered ? [] : ['You are already registered for this programme.'],
-            'success' => $registered,
+            'errors'  => $registration ? [] : ['You are already registered for this programme.'],
+            'success' => (bool) $registration,
         ]);
     }
 
     public function withdraw(Request $req, Response $res, array $args): Response
     {
-        $ok = $this->model->withdraw($args['token']);
-        return $this->renderer->render($res, 'student/withdraw.php', ['success' => $ok]);
+        $token = (string) ($args['token'] ?? '');
+        $interest = $token !== '' ? $this->model->findOneByToken($token) : null;
+
+        if ($req->getMethod() === 'POST') {
+            $ok = $token !== '' ? $this->model->withdraw($token) : false;
+            return $this->renderer->render($res, 'student/withdraw.php', [
+                'success'  => $ok,
+                'interest' => $interest,
+                'token'    => $token,
+            ]);
+        }
+
+        return $this->renderer->render($res, 'student/withdraw.php', [
+            'success'  => false,
+            'interest' => $interest,
+            'token'    => $token,
+        ]);
     }
 
     public function adminList(Request $req, Response $res, array $args): Response

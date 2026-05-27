@@ -1,6 +1,7 @@
 (function () {
   const scriptEl = document.getElementById('admin-programmes-js');
   const publishBaseUrl = scriptEl ? scriptEl.dataset.publishUrlBase || '' : '';
+  const csrfToken = scriptEl ? scriptEl.dataset.csrfToken || '' : '';
 
   function showFlash(message, type) {
     const kind = type || 'success';
@@ -35,7 +36,7 @@
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
           },
-          body: 'status=' + encodeURIComponent(status)
+          body: 'status=' + encodeURIComponent(status) + '&csrf_token=' + encodeURIComponent(csrfToken)
         });
 
         if (!response.ok) {

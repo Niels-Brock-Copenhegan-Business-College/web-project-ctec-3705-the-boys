@@ -12,6 +12,7 @@ foreach ($modules as $module) {
 }
 $withoutDescription = $totalModules - $withDescription;
 ?>
+ <a href="<?= base_url('/admin') ?>" class="btn btn-outline-secondary mb-3">← Back to dashboard</a>
 <!-- Hero -->
 <div class="mb-4 prog-hero">
   <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -45,7 +46,7 @@ $withoutDescription = $totalModules - $withDescription;
   </div>
 </div>
 <?php if (!empty($flash['success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
+  <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert" aria-live="polite">
     <?= htmlspecialchars($flash['success'], ENT_QUOTES) ?>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>

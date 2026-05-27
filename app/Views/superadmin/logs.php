@@ -28,23 +28,28 @@ $entries = $entries ?? [];
                             <tr>
                                 <th>Time</th>
                                 <th>Level</th>
+                                <th>User</th>
                                 <th>Message</th>
-                                        <th>Context</th>
+                                <th>Details</th>
                                         <th></th>
                             </tr>
                         </thead>
                         <tbody>
                                 <?php foreach ($entries as $entry):
                                     $id = $entry['id'] ?? null;
+                                    $actor = $entry['actor'] ?? 'System';
+                                    $details = $entry['details'] ?? ($entry['message'] ?? '');
                                 ?>
                                     <tr>
                                         <td><?= htmlspecialchars((string) ($entry['time'] ?? ''), ENT_QUOTES) ?></td>
                                         <td><?= htmlspecialchars((string) ($entry['level'] ?? ''), ENT_QUOTES) ?></td>
+                                        <td><?= htmlspecialchars((string) $actor, ENT_QUOTES) ?></td>
                                         <td><?= htmlspecialchars((string) ($entry['message'] ?? ''), ENT_QUOTES) ?></td>
-                                        <td><pre class="mb-0 small"><?= htmlspecialchars(json_encode($entry['context'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), ENT_QUOTES) ?></pre></td>
+                                        <td class="text-wrap" style="max-width: 520px;"><?= htmlspecialchars((string) $details, ENT_QUOTES) ?></td>
                                         <td class="text-end">
                                             <?php if ($id !== null): ?>
                                                 <form method="post" action="<?= base_url('/superadmin/logs/delete') ?>" onsubmit="return confirm('Delete this log entry?');">
+                                                    <?= csrf_field() ?>
                                                     <input type="hidden" name="id" value="<?= htmlspecialchars((string)$id, ENT_QUOTES) ?>">
                                                     <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                                 </form>

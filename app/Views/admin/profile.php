@@ -7,14 +7,14 @@ include __DIR__ . '/header.php';
 ?>
 
 <?php if (!empty($flash['success'])): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show auto-dismiss" role="alert">
         <?= htmlspecialchars($flash['success'], ENT_QUOTES) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
 
 <?php if (!empty($flash['error'])): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show auto-dismiss" role="alert">
         <?= htmlspecialchars($flash['error'], ENT_QUOTES) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
@@ -39,6 +39,7 @@ include __DIR__ . '/header.php';
 
                     <div class="col-md-7 p-4 bg-white">
                         <form id="admin-profile-form" method="POST" action="<?= base_url('/admin/profile') ?>" enctype="multipart/form-data">
+                            <?= csrf_field() ?>
                             <div class="row g-3 mb-4">
                                 <div class="col-sm-6">
                                     <div class="border rounded-3 p-3 bg-light h-100">

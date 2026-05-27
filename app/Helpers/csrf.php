@@ -18,8 +18,8 @@ function csrf_verify(string $token): bool
     if (!$stored || !hash_equals($stored, $token)) {
         return false;
     }
-    // Rotate token after successful verify
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    // Keep token stable to allow multiple forms on the same page to submit reliably.
+    // If you require single-use tokens, re-enable rotation here.
     return true;
 }
 

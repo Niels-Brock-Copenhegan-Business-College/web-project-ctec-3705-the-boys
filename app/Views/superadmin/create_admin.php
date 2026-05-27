@@ -16,7 +16,7 @@ $old = $old ?? [];
 <div class="container"><div class="row justify-content-center"><div class="col-12 col-md-6">
     <h3 class="mb-3">Create admin account</h3>
 
-    <?php if (!empty($flash['success'])): ?><div class="alert alert-success"><?= htmlspecialchars($flash['success'], ENT_QUOTES) ?></div><?php endif; ?>
+    <?php if (!empty($flash['success'])): ?><div class="alert alert-success auto-dismiss"><?= htmlspecialchars($flash['success'], ENT_QUOTES) ?></div><?php endif; ?>
     <?php if (!empty($flash['error'])): ?><div class="alert alert-danger"><?= htmlspecialchars($flash['error'], ENT_QUOTES) ?></div><?php endif; ?>
 
     <?php if (!empty($errors)): ?>
@@ -28,6 +28,7 @@ $old = $old ?? [];
     <?php endif; ?>
 
     <form method="POST" action="<?= base_url('/superadmin/admins') ?>">
+        <?= csrf_field() ?>
         <div class="mb-3">
             <label class="form-label">Full name</label>
             <input name="name" class="form-control" value="<?= htmlspecialchars($old['name'] ?? '', ENT_QUOTES) ?>">
@@ -45,5 +46,10 @@ $old = $old ?? [];
     </form>
 
 </div></div></div>
+<script>
+    window.APP_BASE_URL = '<?= rtrim(base_url(), "/") ?>';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('/js/main.js') ?>"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@ $interests = $interests ?? [];
 $pageTitle = 'Interests';
 include __DIR__ . '/header.php';
 ?>
+<a href="<?= base_url('/admin') ?>" class="btn btn-outline-secondary mt-2">← Back</a>
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h1 class="h3 mb-0">Interests – <?= htmlspecialchars($prog['title'] ?? '', ENT_QUOTES) ?></h1>
   <a href="<?= base_url('/admin/interests/' . $prog['id'] . '/export') ?>" class="btn btn-success">Export CSV</a>
@@ -32,5 +33,5 @@ include __DIR__ . '/header.php';
     </table>
   </div>
 <?php endif; ?>
-<a href="<?= base_url('/admin/programmes') ?>" class="btn btn-outline-secondary mt-2">← Back</a>
+
 <?php include __DIR__ . '/footer.php'; ?>

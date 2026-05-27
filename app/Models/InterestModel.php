@@ -43,7 +43,7 @@ class InterestModel
         return $stmt->fetchAll();
     }
 
-    public function register(array $data): bool
+    public function register(array $data): array|false
     {
         // Prevent duplicate
         $stmt = $this->pdo->prepare(
@@ -61,7 +61,7 @@ class InterestModel
             $data['first_name'], $data['last_name'],
             $data['email'], $data['programme_id'], $token,
         ]);
-        return true;
+        return ['withdraw_token' => $token];
     }
 
     public function findByProgramme(int $programmeId): array

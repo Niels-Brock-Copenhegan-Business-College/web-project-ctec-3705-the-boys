@@ -32,7 +32,8 @@ include __DIR__ . '/header.php';
           </div>
 
           <div class="col-md-7 p-4 bg-white">
-            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">  <?= csrf_field() ?>
+            <form id="module-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+              <?= csrf_field() ?>
               <div class="mb-3">
                 <label for="title" class="form-label fw-semibold">Module Title</label>
                 <input id="title" type="text" name="title" class="form-control form-control-lg shadow-sm" required
@@ -42,6 +43,7 @@ include __DIR__ . '/header.php';
               <div class="mb-3 mt-3">
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description" name="description" class="form-control" rows="5" required><?= htmlspecialchars($module['description'] ?? '', ENT_QUOTES) ?></textarea>
+
               </div>
 
               <div class="mb-3">

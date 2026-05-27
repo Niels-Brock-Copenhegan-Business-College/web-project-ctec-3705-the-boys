@@ -6,7 +6,6 @@ $currentImg = $prog['image_url'] ?? '';
 $currentSrc = $currentImg ? (preg_match('#^https?://#i', $currentImg) ? $currentImg : base_url('/' . ltrim($currentImg, '/'))) : '';
 include __DIR__ . '/header.php';
 ?>
-<<<<<<< HEAD
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -34,6 +33,7 @@ include __DIR__ . '/header.php';
 
           <div class="col-md-7 p-4 bg-white">
             <form id="programme-form" method="POST" action="<?= $action ?>" enctype="multipart/form-data">
+              <?= csrf_field() ?>
               <div class="mb-3">
                 <label for="title" class="form-label fw-semibold">Title</label>
                 <input id="title" type="text" name="title" class="form-control form-control-lg shadow-sm" required
@@ -76,43 +76,6 @@ include __DIR__ . '/header.php';
                 <button type="submit" class="btn btn-primary btn-lg shadow-sm">Save Programme</button>
               </div>
             </form>
-=======
-<h1 class="h3 mb-4"><?= $prog ? 'Edit Programme' : 'New Programme' ?></h1>
-<div class="card shadow-sm" style="max-width:640px">
-  <div class="card-body">
-    <form method="POST" action="<?= $action ?>" enctype="multipart/form-data">
-      <?= csrf_field() ?>
-      <div class="mb-3">
-        <label for="title" class="form-label">Title</label>
-        <input id="title" type="text" name="title" class="form-control" required
-               value="<?= htmlspecialchars($prog['title'] ?? '', ENT_QUOTES) ?>">
-      </div>
-      <div class="mb-3">
-        <label for="level" class="form-label">Level</label>
-        <select id="level" name="level" class="form-select" required>
-          <option value="Undergraduate" <?= ($prog['level'] ?? '') === 'Undergraduate' ? 'selected' : '' ?>>Undergraduate</option>
-          <option value="Postgraduate"  <?= ($prog['level'] ?? '') === 'Postgraduate'  ? 'selected' : '' ?>>Postgraduate</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea id="description" name="description" class="form-control" rows="4" required><?= htmlspecialchars($prog['description'] ?? '', ENT_QUOTES) ?></textarea>
-      </div>
-      <div class="mb-3">
-        <label for="image_url" class="form-label">Image URL (optional)</label>
-        <input id="image_url" type="url" name="image_url" class="form-control"
-               value="<?= htmlspecialchars($prog['image_url'] ?? '', ENT_QUOTES) ?>">
-      </div>
-      <?php if (!empty($prog['image_url'])): ?>
-        <div class="mb-3">
-          <label class="form-label">Current image</label>
-          <div>
-            <?php
-              $img = $prog['image_url'] ?? '';
-              $src = preg_match('#^https?://#i', $img) ? $img : base_url('/' . ltrim($img, '/'));
-            ?>
-            <img src="<?= htmlspecialchars($src, ENT_QUOTES) ?>" alt="Current image" style="max-width:220px;max-height:120px;object-fit:cover;border-radius:.375rem">
->>>>>>> b968024e4c7d14db70e6090d3ec6f36152560f48
           </div>
         </div>
       </div>

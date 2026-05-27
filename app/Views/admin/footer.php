@@ -14,6 +14,7 @@
           Deleting: <strong id="deleteItemTitle"></strong>
         </div>
         <form id="secretCodeForm">
+          <?= csrf_field() ?>
           <div class="mb-3">
             <label for="secretCodeInput" class="form-label">Secret Code (PIN)</label>
             <input type="password" 

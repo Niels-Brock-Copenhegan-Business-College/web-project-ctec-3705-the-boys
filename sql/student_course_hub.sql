@@ -129,7 +129,7 @@ CREATE TABLE `modules` (
   `description` text NOT NULL,
   `credits` tinyint(3) UNSIGNED NOT NULL DEFAULT 20,
   `photo` varchar(255) DEFAULT NULL,
-  `year_of_study` tinyint(3) UNSIGNED NOT NULL DEFAULT 1,
+  `year_of_study` tinyint(3) UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

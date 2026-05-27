@@ -8,7 +8,6 @@
 $staff = $staff ?? [];
 $module = $module ?? [
     'title' => '',
-    'year_of_study' => 1,
     'description' => '',
     'photo' => null,
     'staff' => [],
@@ -21,7 +20,7 @@ $pageTitle = htmlspecialchars($module['title'] ?? 'Module Detail', ENT_QUOTES);
 
 // Precompute photo state and URL to avoid repeated logic in the template.
 $hasPhoto = !empty($module['photo']);
-$photoUrl = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo'], ENT_QUOTES)) : '';
+$photoUrl = $hasPhoto ? base_url('/uploads/' . htmlspecialchars((string) ($module['photo'] ?? ''), ENT_QUOTES)) : '';
 ?>
 
 <!DOCTYPE html>
@@ -80,10 +79,6 @@ $photoUrl = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo']
 
             <div class="mod-hero__content">
                 <div class="mod-hero__badges">
-                    <span class="mod-hero__badge mod-hero__badge--year">
-                        <i class="bi bi-calendar3 me-1"></i>Year <?= (int)($module['year_of_study'] ?? 1) ?>
-                    </span>
-
                     <?php if ($iTeach): ?>
                         <span class="mod-hero__badge mod-hero__badge--taught">
                             <i class="bi bi-person-check me-1"></i>You teach this
@@ -219,9 +214,6 @@ $photoUrl = $hasPhoto ? base_url('/uploads/' . htmlspecialchars($module['photo']
                     </div>
 
                     <dl class="staff-profile-dl p-3">
-                        <dt>Year of study</dt>
-                        <dd>Year <?= (int)($module['year_of_study'] ?? 1) ?></dd>
-
                         <dt>Credits</dt>
                         <dd><?= (int)($module['credits'] ?? 20) ?> credits</dd>
 

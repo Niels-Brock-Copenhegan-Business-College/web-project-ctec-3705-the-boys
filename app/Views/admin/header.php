@@ -23,7 +23,8 @@
     <a class="navbar-brand d-flex align-items-center gap-2" href="<?= base_url('/admin') ?>">
       <img src="<?= base_url('/uploads/logo.png') ?>" alt="UniHub" class="brand-img me-2" onerror="this.style.display='none'">
       <div class="d-flex flex-column">
-        <strong class="mb-0">UniHub Admin</strong>
+        <strong class="mb-0 admin-brand-title">UniHub Admin</strong>
+        <small class="admin-brand-subtitle">Management portal</small>
       </div>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav" aria-controls="adminNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -37,7 +38,7 @@
         <li class="nav-item"><a class="nav-link px-3" href="<?= base_url('/admin/interests') ?>">Interests</a></li>
         <li class="nav-item"><a class="nav-link px-3" href="<?= base_url('/admin/staff') ?>">Staff</a></li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <a class="nav-link dropdown-toggle d-flex align-items-center admin-user-trigger" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <?php $adminAvatar = $_SESSION['admin_avatar'] ?? ''; ?>
             <img src="<?= htmlspecialchars($adminAvatar ? base_url('/' . ltrim($adminAvatar, '/')) : base_url('/uploads/admin-avatar.png'), ENT_QUOTES) ?>" alt="Admin" class="avatar me-2" onerror="this.style.display='none'">
             <span class="d-none d-lg-inline"><?= htmlspecialchars($_SESSION['admin_username'] ?? 'Admin', ENT_QUOTES) ?></span>

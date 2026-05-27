@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (secretCodeModalEl) {
     const secretCodeModal = new bootstrap.Modal(secretCodeModalEl, { backdrop: 'static' });
     const secretCodeForm = document.getElementById('secretCodeForm');
+    const csrfInput = secretCodeForm ? secretCodeForm.querySelector('input[name="csrf_token"]') : null;
     let pendingDelete = null; // { itemId, itemType, itemTitle }
 
     const runDeleteVerification = async () => {
@@ -113,24 +114,48 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const secretCode = document.getElementById('secretCodeInput').value.trim();
+      const csrfToken = csrfInput ? csrfInput.value.trim() : '';
+      const errorBox = document.getElementById('secretCodeError');
       
       if (!secretCode) {
-        document.getElementById('secretCodeError').textContent = 'Secret code is required';
-        document.getElementById('secretCodeError').style.display = 'block';
+        errorBox.textContent = 'Secret code is required';
+        errorBox.style.display = 'block';
         return;
       }
 
-      const verifyRes = await fetch(apiUrl('/admin/verify-secret-code'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ secret_code: secretCode })
-      });
+      if (!csrfToken) {
+        errorBox.textContent = 'Security token is missing. Reload the page and try again.';
+        errorBox.style.display = 'block';
+        return;
+      }
 
-      const verifyData = await verifyRes.json();
+      let verifyRes;
+      try {
+        verifyRes = await fetch(apiUrl('/admin/verify-secret-code'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ secret_code: secretCode, csrf_token: csrfToken })
+        });
+      } catch (error) {
+        console.error('Secret code verification request failed:', error);
+        errorBox.textContent = 'Could not verify the secret code. Please try again.';
+        errorBox.style.display = 'block';
+        return;
+      }
 
-      if (!verifyData.success) {
-        document.getElementById('secretCodeError').textContent = verifyData.message || 'Invalid secret code';
-        document.getElementById('secretCodeError').style.display = 'block';
+      let verifyData = null;
+      try {
+        verifyData = await verifyRes.json();
+      } catch (error) {
+        console.error('Secret code verification returned a non-JSON response:', error);
+        errorBox.textContent = 'Secret code verification failed. Please reload and try again.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      if (!verifyRes.ok || !verifyData.success) {
+        errorBox.textContent = verifyData.message || 'Invalid secret code';
+        errorBox.style.display = 'block';
         return;
       }
 
@@ -139,7 +164,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = pendingDelete.deleteUrl;
+      form.style.display = 'none';
+
+      const deleteCsrfInput = document.createElement('input');
+      deleteCsrfInput.type = 'hidden';
+      deleteCsrfInput.name = 'csrf_token';
+      deleteCsrfInput.value = verifyData.csrf_token || csrfToken;
+      form.appendChild(deleteCsrfInput);
+
       document.body.appendChild(form);
+      console.debug('Submitting delete form:', form.action);
       form.submit();
     };
 
