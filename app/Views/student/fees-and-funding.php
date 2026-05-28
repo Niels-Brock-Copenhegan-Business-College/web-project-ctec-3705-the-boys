@@ -91,10 +91,15 @@ include __DIR__ . '/../layout/header.php';
   </div>
 </div>
 
-    <div class="alert alert-info">
-      For personalised funding advice, contact <a href="mailto:admissions@unihub.ac.uk">admissions@unihub.ac.uk</a>.
-    </div>
-  </div>
+<div class="alert alert-info" role="alert">
+  For personalised funding advice, contact 
+  <a href="mailto:admissions@unihub.ac.uk" class="alert-link">
+    admissions@unihub.ac.uk
+  </a>.
+</div>
+
+</div>
 </section>
 </main>
+
 <?php include __DIR__ . '/../layout/footer.php'; ?>
