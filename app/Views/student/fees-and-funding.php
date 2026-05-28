@@ -10,18 +10,42 @@ include __DIR__ . '/../layout/header.php';
     <p class="text-muted mb-4">We are committed to making world-class education accessible. Here is an overview of our tuition fees and the funding options available to you.</p>
 
     <h2 class="h4 mt-4 mb-3">Tuition fees 2026/27</h2>
-    <div class="table-responsive mb-4">
-      <table class="table table-bordered align-middle">
-        <thead class="table-light">
-          <tr><th>Programme level</th><th>Home / UK students</th><th>International students</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Undergraduate (per year)</td><td>£9,250</td><td>£16,500</td></tr>
-          <tr><td>Postgraduate taught (per year)</td><td>£12,000</td><td>£19,000</td></tr>
-          <tr><td>Postgraduate research (per year)</td><td>£4,786</td><td>£17,000</td></tr>
-        </tbody>
-      </table>
-    </div>
+
+<div class="table-responsive mb-4">
+  <table class="table table-bordered align-middle">
+    <caption class="text-muted small">
+      Annual tuition fees for home/UK and international students for the 2026/27 academic year.
+    </caption>
+
+    <thead class="table-light">
+      <tr>
+        <th scope="col">Programme level</th>
+        <th scope="col">Home / UK students</th>
+        <th scope="col">International students</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <th scope="row">Undergraduate (per year)</th>
+        <td>£9,250</td>
+        <td>£16,500</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Postgraduate taught (per year)</th>
+        <td>£12,000</td>
+        <td>£19,000</td>
+      </tr>
+
+      <tr>
+        <th scope="row">Postgraduate research (per year)</th>
+        <td>£4,786</td>
+        <td>£17,000</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
     <h2 class="h4 mt-4 mb-3">Funding options</h2>
     <div class="row g-3 mb-4">
