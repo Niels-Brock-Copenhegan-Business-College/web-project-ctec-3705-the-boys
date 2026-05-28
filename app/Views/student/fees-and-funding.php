@@ -47,33 +47,49 @@ include __DIR__ . '/../layout/header.php';
   </table>
 </div>
 
-    <h2 class="h4 mt-4 mb-3">Funding options</h2>
-    <div class="row g-3 mb-4">
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h3 class="h6 fw-bold">Government student loans</h3>
-          <p class="text-muted small mb-0">UK students may be eligible for tuition fee loans and maintenance loans from Student Finance England, covering all or part of their costs.</p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h3 class="h6 fw-bold">UniHub bursaries</h3>
-          <p class="text-muted small mb-0">We offer means-tested bursaries of up to £3,000 per year for eligible UK students from lower-income households.</p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h3 class="h6 fw-bold">Merit scholarships</h3>
-          <p class="text-muted small mb-0">High-achieving students may qualify for merit-based scholarships. See our <a href="<?= base_url("/scholarships") ?>">scholarships page</a> for full details.</p>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-3 h-100">
-          <h3 class="h6 fw-bold">Postgraduate loans</h3>
-          <p class="text-muted small mb-0">UK students studying a postgraduate taught or research programme may be eligible for a government postgraduate loan of up to £12,167.</p>
-        </div>
-      </div>
+<h2 class="h4 mt-4 mb-3">Funding options</h2>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <h3 class="h6 fw-bold" id="funding-loans">Government student loans</h3>
+      <p class="text-muted small mb-0">
+        UK students may be eligible for tuition fee loans and maintenance loans from Student Finance England,
+        covering all or part of their costs.
+      </p>
     </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <h3 class="h6 fw-bold" id="funding-bursaries">UniHub bursaries</h3>
+      <p class="text-muted small mb-0">
+        We offer means-tested bursaries of up to £3,000 per year for eligible UK students from lower-income households.
+      </p>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <h3 class="h6 fw-bold" id="funding-merit">Merit scholarships</h3>
+      <p class="text-muted small mb-0">
+        High-achieving students may qualify for merit-based scholarships.
+        See our <a href="<?= base_url('/scholarships') ?>" aria-describedby="funding-merit">scholarships page</a>
+        for full details.
+      </p>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm p-3 h-100">
+      <h3 class="h6 fw-bold" id="funding-postgrad">Postgraduate loans</h3>
+      <p class="text-muted small mb-0">
+        UK students studying a postgraduate taught or research programme may be eligible for a government postgraduate
+        loan of up to £12,167.
+      </p>
+    </div>
+  </div>
+</div>
 
     <div class="alert alert-info">
       For personalised funding advice, contact <a href="mailto:admissions@unihub.ac.uk">admissions@unihub.ac.uk</a>.
