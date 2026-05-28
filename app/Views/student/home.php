@@ -15,7 +15,7 @@ $pg  = array_filter($programmes ?? [], fn($p) => $p['level'] === 'Postgraduate')
   <div class="container uh-hero__inner">
     <div class="uh-hero__content">
       <div class="uh-hero__eyebrow">
-        <span class="uh-hero__dot"></span> Applications open for 2026 entry
+        <span class="uh-hero__dot"></span> 
       </div>
       <h1 class="uh-hero__title">
         Shape your future<br>
