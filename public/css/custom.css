@@ -1030,3 +1030,7 @@ a.prog-link:hover { color: #1a5788; text-decoration: underline; }
   .mi-item__action { align-self: flex-start; }
   .mi-item__title { white-space: normal; }
 }
+
+.uh-section-head__title {
+    color: #fff;
+}
