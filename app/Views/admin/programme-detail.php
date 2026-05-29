@@ -59,14 +59,7 @@ include __DIR__ . '/header.php';
 <?php if (!$programme): ?>
   <div class="alert alert-warning">Programme not found.</div>
 <?php else: ?>
-  <!-- Action Buttons -->
-  <div class="prog-actions d-flex gap-2 flex-wrap">
-    <a href="<?= base_url('/admin/programmes/' . $programme['id'] . '/edit') ?>" class="btn btn-warning">Edit Programme</a>
-    <form method="POST" action="<?= base_url('/admin/programmes/' . $programme['id'] . '/delete') ?>" class="d-inline" onsubmit="return confirm('Delete this programme?');">  <?= csrf_field() ?>
-      <button type="submit" class="btn btn-outline-danger">Delete Programme</button>
-    </form>
-    <a href="<?= base_url('/admin/programmes') ?>" class="btn btn-outline-secondary">Back to Programmes</a>
-  </div>
+  
 
   <div class="row g-4">
     <div class="col-lg-4">

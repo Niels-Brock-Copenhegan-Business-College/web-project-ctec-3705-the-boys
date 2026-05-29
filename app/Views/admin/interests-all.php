@@ -143,6 +143,7 @@ include __DIR__ . '/header.php';
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+          <?= csrf_field() ?>
           <input type="hidden" name="_target_id" id="composeTargetId" value="">
           <div class="mb-3">
             <label class="form-label">To</label>

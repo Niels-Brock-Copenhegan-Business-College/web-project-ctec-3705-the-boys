@@ -1,8 +1,6 @@
 <?php
 /**
- * mail_test.php — drop in your project ROOT (same level as public/)
- * Visit: http://localhost:8080/mail_test.php  (or wherever your app runs)
- * DELETE this file after testing.
+ * A simple script to test PHPMailer configuration.
  */
 require __DIR__ . '/../vendor/autoload.php';
 
@@ -11,7 +9,7 @@ use PHPMailer\PHPMailer\Exception as MailException;
 
 $cfg = require __DIR__ . '/../config/mail.php';
 
-// ── Change this to YOUR email address ──
+// YOUR email address ──
 $testTo = 'chitraranjanyadav2058@gmail.com';
 
 $errors = [];
